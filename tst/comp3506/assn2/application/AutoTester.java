@@ -1,6 +1,12 @@
 package comp3506.assn2.application;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
+
+import comp3506.assn2.adts.Trie;
 
 
 /**
@@ -12,7 +18,7 @@ import java.io.FileNotFoundException;
  * @author 
  */
 public class AutoTester implements Search {
-
+	private Trie wordMatchTrie;
 	/**
 	 * Create an object that performs search operations on a document.
 	 * If indexFileName or stopWordsFileName are null or an empty string the document should be loaded
@@ -30,8 +36,57 @@ public class AutoTester implements Search {
 	 */
 	public AutoTester(String documentFileName, String indexFileName, String stopWordsFileName) 
 			throws FileNotFoundException, IllegalArgumentException {
+		if (documentFileName == null || documentFileName == "") {
+			throw new IllegalArgumentException();
+		}
+		this.wordMatchTrie = new Trie();
+		this.loadFile(documentFileName);
 		// TODO Implement constructor to load the data from these files and
 		// TODO setup your data structures for the application.
+	}
+	
+	
+	private void loadFile(String documentFileName) {
+		BufferedReader bw = null;
+		Scanner scanner;
+		int line = 0;
+		String readLine;
+		try {
+			bw = new BufferedReader(new FileReader(documentFileName));
+			while (bw.readLine() != null) {
+				readLine = bw.readLine();
+				line++;
+				int scannedIndex = 1;
+				scanner = new Scanner(readLine);
+				while (scanner.hasNext()) {
+					String scannedWord = scanner.next();
+					this.wordMatchTrie.addWord(scannedWord, line, scannedIndex);
+					scannedIndex = scannedWord.length() + 1;
+				}
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Determines the number of times the word appears in the document.
+	 * 
+	 * @param word The word to be counted in the document.
+	 * @return The number of occurrences of the word in the document.
+	 * @throws IllegalArgumentException if word is null or an empty String.
+	 */
+	public int wordCount(String word) throws IllegalArgumentException {
+		if (word == "" || word == null) {
+			throw new IllegalArgumentException();
+		}
+		return this.wordMatchTrie.getWordAmount(word);
 	}
 
 }

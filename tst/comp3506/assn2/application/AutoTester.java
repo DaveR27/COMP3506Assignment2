@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.Trie;
+import comp3506.assn2.utils.Pair;
 
 
 /**
@@ -49,19 +51,20 @@ public class AutoTester implements Search {
 	private void loadFile(String documentFileName) {
 		BufferedReader bw = null;
 		Scanner scanner;
-		int line = 0;
+		int stringIndex = 0;
 		String readLine;
 		try {
 			bw = new BufferedReader(new FileReader(documentFileName));
 			while (bw.readLine() != null) {
 				readLine = bw.readLine();
-				line++;
-				int scannedIndex = 1;
+				stringIndex += (readLine.length() - 1);
+				int scannedIndex = 0;
 				scanner = new Scanner(readLine);
 				while (scanner.hasNext()) {
 					String scannedWord = scanner.next();
-					this.wordMatchTrie.addWord(scannedWord, line, scannedIndex);
-					scannedIndex = scannedWord.length() + 1;
+					this.wordMatchTrie.addWord(scannedWord, 
+							readLine.indexOf("scannedWord",scannedIndex + stringIndex));
+					scannedIndex = scannedWord.length();
 				}
 			} 
 		} catch (IOException e) {
@@ -83,10 +86,29 @@ public class AutoTester implements Search {
 	 * @throws IllegalArgumentException if word is null or an empty String.
 	 */
 	public int wordCount(String word) throws IllegalArgumentException {
+		this.arguementCheck(word);
+		return this.wordMatchTrie.getWordAmount(word);
+	}
+	
+	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
+		Scanner scanner = new Scanner(phrase);
+		this.arguementCheck(phrase);
+		int[] indexes = null;
+		while (scanner.hasNext()) {
+			if (this.wordMatchTrie.findWordIndex(scanner.next() != null)) {
+				indexes = this.wordMatchTrie.
+		}
+		
+		
+	}
+	
+	private boolean arguementCheck(String word) throws IllegalArgumentException {
 		if (word == "" || word == null) {
 			throw new IllegalArgumentException();
 		}
-		return this.wordMatchTrie.getWordAmount(word);
+		return true;
 	}
+	
+	
 
 }

@@ -14,12 +14,12 @@ public class TrieNode {
 		this.endOfWord = false;
 	}
 	
-	public void endOfWord(Integer line, Integer col) {
+	public void endOfWord(int index) {
 		this.endOfWord = true;
 		if (this.infoNode == null) {
 			this.infoNode = new TrieLeaf();
 		}
-		this.infoNode.insertOccurence(line, col);
+		this.infoNode.insertOccurence(index);
 	}
 	
 	public boolean isEndOfWord() {

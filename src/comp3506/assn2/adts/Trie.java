@@ -24,7 +24,7 @@ public class Trie {
 	 * @param line The line that the word is found on within the document.
 	 * @param col the column on which the word starts.
 	 */
-	public void addWord(String word, Integer line, Integer col) {
+	public void addWord(String word, int index) {
 		TrieNode movingNode = root; //1
 		
 		//Climbs down the tree adding the letters to previous nodes or making new ones.
@@ -40,7 +40,7 @@ public class Trie {
 				movingNode = temp;//1
 			}
 		}
-		movingNode.endOfWord(line, col);//1 //makes the last letter the end of the word and makes and info node.
+		movingNode.endOfWord(index);//1 //makes the last letter the end of the word and makes and info node.
 	}
 	
 	/**
@@ -102,4 +102,23 @@ public class Trie {
 		}
 		return movingNode.returnInfoLeaf().appearences(); //3
 	}
+	
+	public int[] findWordIndex(String word) {
+		TrieNode movingNode = root; // 1
+		
+		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word
+			HashMap<Character, TrieNode> child = movingNode.getChildren(); //2
+			char stringChar = word.charAt(i); // 2
+			if (child.containsKey(stringChar)) { //2
+				movingNode = child.get(stringChar); //2
+			} else {
+				return null; //1
+			}
+		}
+		if(movingNode.isEndOfWord()) {
+			return movingNode.returnInfoLeaf().indexes();
+		}
+		return null;
+	}
+	
 }

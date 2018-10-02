@@ -1,17 +1,15 @@
 package comp3506.assn2.adts;
 
-import comp3506.assn2.utils.Pair;
 
 public class TrieLeaf {
-	private Pair<Integer, Integer>[] occurences; //where the word starts
+	private int[] occurences; //where the word starts
 	private int occurenceSize;
 	private int pointer;
 	
-	@SuppressWarnings("unchecked")
 	public TrieLeaf() {
 		this.occurenceSize = 10;
 		this.pointer = 0;
-		this.occurences = (Pair<Integer, Integer>[]) new Pair[this.occurenceSize];
+		this.occurences = new int[this.occurenceSize];
 	}
 	
 	/**
@@ -19,11 +17,11 @@ public class TrieLeaf {
 	 * @param line
 	 * @param col
 	 */
-	public void insertOccurence(Integer line, Integer col) {
+	public void insertOccurence(int index) {
 		if (this.occurences.length == this.occurenceSize/2) { //2
 			this.resizeOccurences(); //1
 		}
-		this.occurences[this.pointer] = new Pair<Integer, Integer>(line, col);//3
+		this.occurences[this.pointer] = index;//3
 	}
 	
 	/**
@@ -34,11 +32,14 @@ public class TrieLeaf {
 		return this.occurences.length; //1
 	}
 	
+	public int[] indexes() {
+		return this.occurences;
+	}
 	
-	@SuppressWarnings("unchecked")
+	
 	private void resizeOccurences() {
 		this.occurenceSize = this.occurenceSize*2; //2
-		Pair<Integer, Integer>[] temp = (Pair<Integer, Integer>[]) new Pair[this.occurenceSize]; //3
+		int[] temp =  new int[this.occurenceSize]; //3
 		
 		for (int i = 0; i < this.occurenceSize/2; i++) { // i
 			temp[i] = this.occurences[i]; //3

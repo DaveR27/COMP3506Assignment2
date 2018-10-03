@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.Trie;
-import comp3506.assn2.utils.Pair;
+
+
 
 
 /**
@@ -20,7 +20,11 @@ import comp3506.assn2.utils.Pair;
  * @author 
  */
 public class AutoTester implements Search {
-	private Trie wordMatchTrie;
+	private Trie wordTrie;
+	private StringBuffer documentData;
+	private StringBuffer indexData;
+	private StringBuffer stopWordsData;
+	
 	/**
 	 * Create an object that performs search operations on a document.
 	 * If indexFileName or stopWordsFileName are null or an empty string the document should be loaded
@@ -38,45 +42,63 @@ public class AutoTester implements Search {
 	 */
 	public AutoTester(String documentFileName, String indexFileName, String stopWordsFileName) 
 			throws FileNotFoundException, IllegalArgumentException {
+		this.documentData = new StringBuffer();
+		this.indexData = new StringBuffer();
+		this.stopWordsData = new StringBuffer();
 		if (documentFileName == null || documentFileName == "") {
 			throw new IllegalArgumentException();
 		}
-		this.wordMatchTrie = new Trie();
-		this.loadFile(documentFileName);
+		if (indexFileName != null || indexFileName != "") {
+			this.loadFile(indexFileName, this.indexData);
+		}
+		if (stopWordsFileName != null || stopWordsFileName != "") {
+			this.loadFile(stopWordsFileName, this.stopWordsData);
+		}
+		this.loadFile(documentFileName, this.documentData);
+		this.wordTrie = new Trie();
+		this.loadTrie();
 		// TODO Implement constructor to load the data from these files and
 		// TODO setup your data structures for the application.
 	}
 	
+	private void loadTrie() {
+		Scanner wordFinder = new Scanner(this.documentData.toString());
+		int indexCount = 0;
+		while (wordFinder.hasNext()) {
+			String word = wordFinder.next();
+			this.wordTrie.addWord(word, this.documentData.indexOf(word, indexCount));
+			indexCount += this.documentData.indexOf(word);
+		}
+		wordFinder.close();
+	}
 	
-	private void loadFile(String documentFileName) {
+	private void loadFile(String fileName, StringBuffer savingTo) {
 		BufferedReader bw = null;
-		Scanner scanner;
-		int stringIndex = 0;
-		String readLine;
+		String line;
 		try {
-			bw = new BufferedReader(new FileReader(documentFileName));
-			while (bw.readLine() != null) {
-				readLine = bw.readLine();
-				stringIndex += (readLine.length() - 1);
-				int scannedIndex = 0;
-				scanner = new Scanner(readLine);
-				while (scanner.hasNext()) {
-					String scannedWord = scanner.next();
-					this.wordMatchTrie.addWord(scannedWord, 
-							readLine.indexOf("scannedWord",scannedIndex + stringIndex));
-					scannedIndex = scannedWord.length();
-				}
+			bw = new BufferedReader(new FileReader(fileName));
+			while ((line = bw.readLine()) != null) {
+				savingTo.append(line + '\n');
 			} 
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				bw.close();
+				if (bw != null) {
+					bw.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+	
+	private boolean arguementCheck(String word) throws IllegalArgumentException {
+		if (word == "" || word == null) {
+			throw new IllegalArgumentException();
+		}
+		return true;
+	}	
 	
 	/**
 	 * Determines the number of times the word appears in the document.
@@ -87,27 +109,17 @@ public class AutoTester implements Search {
 	 */
 	public int wordCount(String word) throws IllegalArgumentException {
 		this.arguementCheck(word);
-		return this.wordMatchTrie.getWordAmount(word);
+		return this.wordTrie.getWordAmount(word);
 	}
-	
-	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
-		Scanner scanner = new Scanner(phrase);
-		this.arguementCheck(phrase);
-		int[] indexes = null;
-		while (scanner.hasNext()) {
-			if (this.wordMatchTrie.findWordIndex(scanner.next() != null)) {
-				indexes = this.wordMatchTrie.
-		}
-		
-		
-	}
-	
-	private boolean arguementCheck(String word) throws IllegalArgumentException {
-		if (word == "" || word == null) {
-			throw new IllegalArgumentException();
-		}
-		return true;
-	}
+//	
+//	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
+//		
+//		
+//	}
+//	
+//	private boolean arguementCheck(String word) throws IllegalArgumentException {
+//		
+//	}
 	
 	
 

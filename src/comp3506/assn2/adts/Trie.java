@@ -2,6 +2,8 @@ package comp3506.assn2.adts;
 
 import java.util.HashMap;
 
+import comp3506.assn2.utils.Pair;
+
 public class Trie {
 	
 	private TrieNode root;
@@ -24,7 +26,7 @@ public class Trie {
 	 * @param line The line that the word is found on within the document.
 	 * @param col the column on which the word starts.
 	 */
-	public void addWord(String word, int index) {
+	public void addWord(String word, Integer line, Integer col) {
 		TrieNode movingNode = root; //1
 		
 		//Climbs down the tree adding the letters to previous nodes or making new ones.
@@ -40,7 +42,7 @@ public class Trie {
 				movingNode = temp;//1
 			}
 		}
-		movingNode.endOfWord(index);//1 //makes the last letter the end of the word and makes and info node.
+		movingNode.endOfWord(line, col);//1 //makes the last letter the end of the word and makes and info node.
 	}
 	
 	/**
@@ -103,7 +105,7 @@ public class Trie {
 		return movingNode.returnInfoLeaf().appearences(); //3
 	}
 	
-	public int[] findWordIndex(String word) {
+	public Pair<Integer, Integer>[] findWordIndex(String word) {
 		TrieNode movingNode = root; // 1
 		
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word

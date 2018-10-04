@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.Trie;
+import comp3506.assn2.utils.Pair;
 
 
 
@@ -62,14 +64,23 @@ public class AutoTester implements Search {
 	}
 	
 	private void loadTrie() {
-		Scanner wordFinder = new Scanner(this.documentData.toString());
-		int indexCount = 0;
-		while (wordFinder.hasNext()) {
+		Integer lineIndex = 0;
+		String line;
+		Scanner wordLine = new Scanner(this.documentData.toString());
+		while (wordLine.hasNextLine()) {
+			lineIndex++;
+			Integer colIndex = 0;
+			line = wordLine.nextLine();
+			Scanner wordFinder = new Scanner(line);
+			while (wordFinder.hasNext()) {
 			String word = wordFinder.next();
-			this.wordTrie.addWord(word, this.documentData.indexOf(word, indexCount));
-			indexCount += this.documentData.indexOf(word);
+			int wordIndex = line.indexOf(word, colIndex);
+			this.wordTrie.addWord(word, lineIndex, wordIndex);
+			colIndex += wordIndex;
+			}
+			wordFinder.close();
 		}
-		wordFinder.close();
+		wordLine.close();
 	}
 	
 	private void loadFile(String fileName, StringBuffer savingTo) {
@@ -111,11 +122,19 @@ public class AutoTester implements Search {
 		this.arguementCheck(word);
 		return this.wordTrie.getWordAmount(word);
 	}
-//	
-//	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
-//		
-//		
-//	}
+	
+	/**
+	 * Finds all occurrences of the phrase in the document.
+	 * A phrase may be a single word or a sequence of words.
+	 * 
+	 * @param phrase The phrase to be found in the document.
+	 * @return List of pairs, where each pair indicates the line and column number of each occurrence of the phrase.
+	 *         Returns an empty list if the phrase is not found in the document.
+	 * @throws IllegalArgumentException if phrase is null or an empty String.
+	 */
+	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
+		this.arguementCheck(phrase);
+	}
 //	
 //	private boolean arguementCheck(String word) throws IllegalArgumentException {
 //		

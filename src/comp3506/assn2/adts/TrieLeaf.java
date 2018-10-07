@@ -49,6 +49,8 @@ public class TrieLeaf {
 			temp[i] = this.occurences[i]; //3
 		}
 		this.occurences = temp; // 1
+		
 	}
+
 	
 }

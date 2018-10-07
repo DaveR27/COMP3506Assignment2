@@ -4,10 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.Trie;
+import comp3506.assn2.adts.TrieNode;
 import comp3506.assn2.utils.Pair;
 
 
@@ -67,13 +69,15 @@ public class AutoTester implements Search {
 		Integer lineIndex = 0;
 		String line;
 		Scanner wordLine = new Scanner(this.documentData.toString());
+		wordLine.useDelimiter(",| | \r\n");
 		while (wordLine.hasNextLine()) {
 			lineIndex++;
 			Integer colIndex = 0;
 			line = wordLine.nextLine();
 			Scanner wordFinder = new Scanner(line);
+			wordFinder.useDelimiter(",| | \r\n");
 			while (wordFinder.hasNext()) {
-			String word = wordFinder.next();
+			String word = wordFinder.next().toLowerCase();
 			int wordIndex = line.indexOf(word, colIndex);
 			this.wordTrie.addWord(word, lineIndex, wordIndex);
 			colIndex += wordIndex;
@@ -123,19 +127,24 @@ public class AutoTester implements Search {
 		return this.wordTrie.getWordAmount(word);
 	}
 	
-	/**
-	 * Finds all occurrences of the phrase in the document.
-	 * A phrase may be a single word or a sequence of words.
-	 * 
-	 * @param phrase The phrase to be found in the document.
-	 * @return List of pairs, where each pair indicates the line and column number of each occurrence of the phrase.
-	 *         Returns an empty list if the phrase is not found in the document.
-	 * @throws IllegalArgumentException if phrase is null or an empty String.
-	 */
+	
 	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
 		this.arguementCheck(phrase);
+ 
+		
 	}
-//	
+	
+	
+	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
+		this.arguementCheck(prefix);
+		HashMap<Character, TrieNode> occurences = this.wordTrie.getPrefixOccurence(prefix);
+		this.findPrefixCoccurence(occurences);
+		//TODO: Check to see if it is end of word for every node from the children and if it is get the data of the occurrences from that node.
+	}
+	
+	private void findPrefixCoccurence(HashMap<Character, TrieNode> occurences) {
+		
+	}
 //	private boolean arguementCheck(String word) throws IllegalArgumentException {
 //		
 //	}

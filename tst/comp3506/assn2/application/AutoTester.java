@@ -4,13 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.Trie;
-import comp3506.assn2.adts.TrieNode;
-import comp3506.assn2.utils.Pair;
 
 
 
@@ -74,23 +70,26 @@ public class AutoTester implements Search {
 			lineIndex++;
 			Integer colIndex = 0;
 			line = wordLine.nextLine();
-			Scanner wordFinder = new Scanner(line);
+			Scanner wordFind = new Scanner(line);
 			if (this.indexData != null) {
 				if (this.indexData.toString().contains(line)) {
-					colIndex = this.titleLine(line, wordFinder, lineIndex, colIndex);
+					colIndex = this.titleLine(line, wordFind, lineIndex, colIndex);
 					continue;
 				}
 			}
+			line = line.replaceAll("[^'_-]+|[^a-zA-z ]", "");
+			line = line.replaceAll("-", " ");
+			line = line.replaceAll("_", " ");
+			Scanner wordFinder = new Scanner(line);
 			wordFinder.useDelimiter(",| | \r\n");
 			while (wordFinder.hasNext()) {
-			String word = wordFinder.next().toLowerCase().replaceAll("^\\p{Punct}+|\\p{Punct}+$", "");
-			word = word.replaceAll("[0-9]", "");
-			word = word.replaceAll("-", " ");
-			int wordIndex = line.indexOf(word);
+			String word = wordFinder.next().replaceAll("^'+|$'","").toLowerCase();
+			int wordIndex = line.indexOf(word, colIndex);
 			this.wordTrie.addWord(word, lineIndex, wordIndex);
-			colIndex += wordIndex;
+			colIndex += (wordIndex-1);
 			}
 			wordFinder.close();
+			wordFind.close();
 		}
 		wordLine.close();
 	}

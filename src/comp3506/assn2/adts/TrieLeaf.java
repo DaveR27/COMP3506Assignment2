@@ -9,7 +9,7 @@ public class TrieLeaf {
 	
 	@SuppressWarnings("unchecked")
 	public TrieLeaf() {
-		this.occurenceSize = 50;
+		this.occurenceSize = 20;
 		this.pointer = 0;
 		this.occurences = (Pair<Integer, Integer>[]) new Pair[this.occurenceSize];
 	}

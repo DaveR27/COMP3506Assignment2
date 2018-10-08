@@ -33,7 +33,6 @@ public class Trie {
 			if (index == -58) {
 				index = 26;
 			}
-			System.out.println(index + " " + line + " " + word.charAt(i));
 			if(movingNode.getChildren()[index] == null) {
 				movingNode.addElement(index);
 			}
@@ -60,16 +59,16 @@ public class Trie {
 		
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word
 			int index = word.charAt(i) - 'a';
-			if(movingNode.getElement(index) == null) {
-				return -1;
-			} else {
+			if(index == -58) {
+				index = 26;
+			}
+			if(movingNode.getElement(index) != null) {
 				movingNode = movingNode.getElement(index);
+			} else {
+				return -1;
 			}
 		}
-		if(movingNode.isEndOfWord()) {
-			return movingNode.returnInfoLeaf().appearences();
-		}
-		return -1;
+		return movingNode.returnInfoLeaf().appearences();
 	}
 	
 	public Pair<Integer, Integer>[] findWordIndex(String word) {

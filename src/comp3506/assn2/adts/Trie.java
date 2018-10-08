@@ -7,7 +7,7 @@ public class Trie {
 	private TrieNode root;
 	
 	public Trie() {
-		root = new TrieNode();
+		root = new TrieNode(null);
 	}
 	
 	/**
@@ -25,7 +25,7 @@ public class Trie {
 	 * @param col the column on which the word starts.
 	 */
 	public void addWord(String word, Integer line, Integer col) {
-		TrieNode movingNode = root; //1
+		TrieNode movingNode = this.root; //1
 		
 		//Climbs down the tree adding the letters to previous nodes or making new ones.
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the string
@@ -34,7 +34,7 @@ public class Trie {
 				index = 26;
 			}
 			if(movingNode.getChildren()[index] == null) {
-				movingNode.addElement(index);
+				movingNode.addElement(index, String.valueOf(word.charAt(i)));
 			}
 			movingNode = movingNode.getElement(index);
 		}
@@ -55,7 +55,7 @@ public class Trie {
 	 * 		if the word does not exist in the document then -1 is returned.
 	 */
 	public int getWordAmount(String word) {
-		TrieNode movingNode = root; // 1
+		TrieNode movingNode = this.root; // 1
 		
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word
 			int index = word.charAt(i) - 'a';

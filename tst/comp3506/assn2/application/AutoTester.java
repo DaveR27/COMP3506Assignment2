@@ -77,14 +77,13 @@ public class AutoTester implements Search {
 					continue;
 				}
 			}
-			line = line.replaceAll("[^'_-]+|[^a-zA-z ]", "");
-			line = line.replaceAll("-", " ");
-			line = line.replaceAll("_", " ");
+			line = this.cleanLine(line);
 			Scanner wordFinder = new Scanner(line);
 			wordFinder.useDelimiter(",| | \r\n");
 			while (wordFinder.hasNext()) {
-			String word = wordFinder.next().replaceAll("^'+|$'","").toLowerCase();
+			String word = wordFinder.next();
 			int wordIndex = line.indexOf(word, colIndex);
+			word = word.replaceAll("^'+|$'","").toLowerCase();
 			this.wordTrie.addWord(word, lineIndex, wordIndex);
 			colIndex += (wordIndex-1);
 			}
@@ -92,6 +91,17 @@ public class AutoTester implements Search {
 			wordFind.close();
 		}
 		wordLine.close();
+	}
+	
+	private String cleanLine(String line) {
+		line = line.replaceAll("[^'a-zA-z ]", "");
+		line = line.replaceAll("[_-]", " ");
+		line = line.replaceAll("\\]", "");
+		line = line.replaceAll("\\[", "");
+		line = line.replaceAll("[`]", "");
+		line = line.replaceAll("[\\\\]", "");
+		line = line.replaceAll("[/]", "");
+		return line;
 	}
 	
 	private int titleLine(String line, Scanner lineScanner, int lineIndex, int colIndex) {

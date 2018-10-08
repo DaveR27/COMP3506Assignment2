@@ -3,12 +3,14 @@ package comp3506.assn2.adts;
 
 
 public class TrieNode {
-	private TrieNode[] children;
-	private final int ALPHABET_SIZE = 27; //a-z, 0-9 && '
+	private String storedElement;
+	TrieNode[] children;
+	private final int ALPHABET_SIZE = 27; //a-z && '
 	private TrieLeaf infoNode;
 	private boolean endOfWord;
 	
-	public TrieNode() {
+	public TrieNode(String letter) {
+		this.storedElement = String.valueOf(letter);
 		this.children = new TrieNode[this.ALPHABET_SIZE];
 		this.endOfWord = false;
 		
@@ -29,12 +31,16 @@ public class TrieNode {
 		return this.endOfWord;
 	}
 	
-	public void addElement(int index) {
-		this.children[index] = new TrieNode();
+	public void addElement(int index, String letter) {
+		this.children[index] = new TrieNode(letter);
 	}
 	
 	public TrieNode getElement(int index) {
 		return this.children[index];
+	}
+	
+	public String getStoredLetter() {
+		return this.storedElement;
 	}
 	
 	public TrieNode[] getChildren() {

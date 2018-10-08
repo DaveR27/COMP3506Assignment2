@@ -75,16 +75,35 @@ public class AutoTester implements Search {
 			Integer colIndex = 0;
 			line = wordLine.nextLine();
 			Scanner wordFinder = new Scanner(line);
+			if (this.indexData != null) {
+				if (this.indexData.toString().contains(line)) {
+					colIndex = this.titleLine(line, wordFinder, lineIndex, colIndex);
+					continue;
+				}
+			}
 			wordFinder.useDelimiter(",| | \r\n");
 			while (wordFinder.hasNext()) {
-			String word = wordFinder.next().toLowerCase();
-			int wordIndex = line.indexOf(word, colIndex);
+			String word = wordFinder.next().toLowerCase().replaceAll("^\\p{Punct}+|\\p{Punct}+$", "");
+			word = word.replaceAll("[0-9]", "");
+			word = word.replaceAll("-", " ");
+			int wordIndex = line.indexOf(word);
 			this.wordTrie.addWord(word, lineIndex, wordIndex);
 			colIndex += wordIndex;
 			}
 			wordFinder.close();
 		}
 		wordLine.close();
+	}
+	
+	private int titleLine(String line, Scanner lineScanner, int lineIndex, int colIndex) {
+		while (lineScanner.hasNext()) {
+			String word = lineScanner.next().toLowerCase();
+			int wordIndex = line.indexOf(word, colIndex);
+			this.wordTrie.addWord(word, lineIndex, wordIndex);
+			colIndex += wordIndex;
+		}
+		lineScanner.close();
+		return colIndex;
 	}
 	
 	private void loadFile(String fileName, StringBuffer savingTo) {
@@ -128,23 +147,26 @@ public class AutoTester implements Search {
 	}
 	
 	
-	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
-		this.arguementCheck(phrase);
- 
-		
-	}
-	
-	
-	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
-		this.arguementCheck(prefix);
-		HashMap<Character, TrieNode> occurences = this.wordTrie.getPrefixOccurence(prefix);
-		this.findPrefixCoccurence(occurences);
-		//TODO: Check to see if it is end of word for every node from the children and if it is get the data of the occurrences from that node.
-	}
-	
-	private void findPrefixCoccurence(HashMap<Character, TrieNode> occurences) {
-		
-	}
+//	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
+//		this.arguementCheck(phrase);
+//		
+//	}
+//	
+//	
+//	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
+//		this.arguementCheck(prefix);
+//		List<Pair<Integer,Integer>> listOccurences = null;
+//		HashMap<Character, TrieNode> occurences = this.wordTrie.getPrefixOccurence(prefix);
+//		this.findPrefixTraversal(occurences, listOccurences);
+//		
+//		//TODO: Check to see if it is end of word for every node from the children and if it is get the data of the occurrences from that node.
+//	}
+//	
+//	private void findPrefixTraversal(HashMap<Character, TrieNode> occurences, List<Pair<Integer,Integer>> listOccurences) {
+//		for (int i = 0; i<occurences.size(); i++) {
+//			
+//		}
+//	}
 //	private boolean arguementCheck(String word) throws IllegalArgumentException {
 //		
 //	}

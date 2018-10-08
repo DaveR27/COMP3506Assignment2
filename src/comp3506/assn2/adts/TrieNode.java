@@ -1,17 +1,20 @@
 package comp3506.assn2.adts;
 
-import java.util.HashMap;
+
 
 public class TrieNode {
-	private String storedElement;
-	private HashMap<Character, TrieNode> children;
+	private TrieNode[] children;
+	private final int ALPHABET_SIZE = 27; //a-z, 0-9 && '
 	private TrieLeaf infoNode;
 	private boolean endOfWord;
 	
-	public TrieNode(String element) {
-		this.storedElement = element;
-		this.children = new HashMap<Character, TrieNode>();
+	public TrieNode() {
+		this.children = new TrieNode[this.ALPHABET_SIZE];
 		this.endOfWord = false;
+		
+		for (int i = 0; i < this.ALPHABET_SIZE; i++) {
+			this.children[i] = null;
+		}
 	}
 	
 	public void endOfWord(Integer line, Integer col) {
@@ -26,11 +29,15 @@ public class TrieNode {
 		return this.endOfWord;
 	}
 	
-	public String getElement() {
-		return this.storedElement;
+	public void addElement(int index) {
+		this.children[index] = new TrieNode();
 	}
 	
-	public HashMap<Character, TrieNode> getChildren() {
+	public TrieNode getElement(int index) {
+		return this.children[index];
+	}
+	
+	public TrieNode[] getChildren() {
 		return this.children;
 	}
 	

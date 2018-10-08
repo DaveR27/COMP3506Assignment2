@@ -32,7 +32,7 @@ public class TrieLeaf {
 	 * @return
 	 */
 	public int appearences() {
-		return this.pointer + 1; //1
+		return this.pointer; //1
 	}
 	
 	public Pair<Integer, Integer>[] indexes() {

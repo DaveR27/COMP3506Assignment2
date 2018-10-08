@@ -38,14 +38,14 @@ public class ProvidedTests {
 	private final static List<TestingPair<Integer,Integer>> obscureOccurrences = 
 			Arrays.asList(new TestingPair<>(27960,25), new TestingPair<>(44217,19), new TestingPair<>(46802,12), 
 					      new TestingPair<>(69473,10), new TestingPair<>(69674,29), new TestingPair<>(72415,41),
-                          new TestingPair<>(78318,33), new TestingPair<>(92223,45), new TestingPair<>(100957,31), 
+                          new TestingPair<>(78318,33), new TestingPair<>(92223,45), new TestingPair<>(100957,31),
                           new TestingPair<>(122883,31), new TestingPair<>(131918,38), new TestingPair<>(148012,31));
 
 	
 	@BeforeClass
 	public static void openFiles() {
 		try {
-			searchApplication = new AutoTester("./files/shakespeare.txt", "./files/shakespeare-index.txt", "./files/stop-words.txt");
+			searchApplication = new AutoTester("files\\shakespeare.txt", "files\\shakespeare-index.txt", "files\\stop-words.txt");
 		} catch (FileNotFoundException | IllegalArgumentException e) {
 			System.out.println("Opening files failed!");
 			e.printStackTrace();

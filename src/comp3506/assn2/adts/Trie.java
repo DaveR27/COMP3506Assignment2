@@ -1,7 +1,5 @@
 package comp3506.assn2.adts;
 
-import java.util.HashMap;
-
 import comp3506.assn2.utils.Pair;
 
 public class Trie {
@@ -9,7 +7,7 @@ public class Trie {
 	private TrieNode root;
 	
 	public Trie() {
-		root = new TrieNode(null);
+		root = new TrieNode();
 	}
 	
 	/**
@@ -31,50 +29,17 @@ public class Trie {
 		
 		//Climbs down the tree adding the letters to previous nodes or making new ones.
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the string
-			HashMap<Character, TrieNode> child = movingNode.getChildren(); //2
-			char stringChar = word.charAt(i); //2
-			
-			if(child.containsKey(stringChar)) { //2
-				movingNode = child.get(stringChar); //2
-			} else {
-				TrieNode temp = new TrieNode(String.valueOf(stringChar));//3
-				child.put(stringChar, temp);//1
-				movingNode = temp;//1
+			int index = word.charAt(i) - 'a';
+			if (index == -58) {
+				index = 26;
 			}
+			System.out.println(index + " " + line + " " + word.charAt(i));
+			if(movingNode.getChildren()[index] == null) {
+				movingNode.addElement(index);
+			}
+			movingNode = movingNode.getElement(index);
 		}
 		movingNode.endOfWord(line, col);//1 //makes the last letter the end of the word and makes and info node.
-	}
-	
-	/**
-	 * Searches down the Trie, following the characters of the input string, when there is no more
-	 * characters in the input it will return a hashmap of all the words endings that prefix, if there is
-	 * no prefix stored within the Trie then null is returned.
-	 * 
-	 * Since in the worst case 5 + (i*8) primitive operations occur, it can be said that there is a linear
-	 * component to the search, but since the search will also depend on the alphabet that the structure is using
-	 * there will also be an another factor that the previous linear factor will be multiplied by. So if d is the 
-	 * size of the alphabet using the structure in the worst cse this method runs at:
-	 * O(dn)
-	 * 
-	 * @param word the prefix to be searched within the Trie
-	 * @return HashMap of of all the word endings that come after the Prefix. If it isn't a prefix null
-	 * 		is returned.
-	 */
-	public HashMap<Character,TrieNode> getPrefixOccurence(String word) {
-		int stringLength = word.length(); //2
-		TrieNode movingNode = root; //2
-		
-		for(int i = 0; i < stringLength; i++) { // i times where i is the length of the string
-			char character = word.charAt(i); // 2
-			
-			HashMap<Character,TrieNode> child = movingNode.getChildren(); //2
-			if (child.containsKey(character)) { //2
-				movingNode = child.get(character); //2
-			} else {
-				return child; //1
-			}
-		}
-		return null; //1
 	}
 	
 	/**
@@ -94,27 +59,28 @@ public class Trie {
 		TrieNode movingNode = root; // 1
 		
 		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word
-			HashMap<Character, TrieNode> child = movingNode.getChildren(); //2
-			char stringChar = word.charAt(i); // 2
-			if (child.containsKey(stringChar)) { //2
-				movingNode = child.get(stringChar); //2
+			int index = word.charAt(i) - 'a';
+			if(movingNode.getElement(index) == null) {
+				return -1;
 			} else {
-				return -1; //1
+				movingNode = movingNode.getElement(index);
 			}
 		}
-		return movingNode.returnInfoLeaf().appearences(); //3
+		if(movingNode.isEndOfWord()) {
+			return movingNode.returnInfoLeaf().appearences();
+		}
+		return -1;
 	}
 	
 	public Pair<Integer, Integer>[] findWordIndex(String word) {
 		TrieNode movingNode = root; // 1
 		
-		for(int i = 0; i < word.length(); i++) { // i times where i is the length of the word
-			HashMap<Character, TrieNode> child = movingNode.getChildren(); //2
-			char stringChar = word.charAt(i); // 2
-			if (child.containsKey(stringChar)) { //2
-				movingNode = child.get(stringChar); //2
+		for(int i = 0; i < word.length(); i++) {
+			int index = word.charAt(i) - 'a';
+			if(movingNode.getElement(index) == null) {
+				return null;
 			} else {
-				return null; //1
+				movingNode = movingNode.getElement(index);
 			}
 		}
 		if(movingNode.isEndOfWord()) {
@@ -122,5 +88,5 @@ public class Trie {
 		}
 		return null;
 	}
-	
 }
+	

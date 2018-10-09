@@ -19,12 +19,12 @@ public class TrieNode {
 		}
 	}
 	
-	public void endOfWord(Integer line, Integer col) {
+	public void endOfWord(Integer line, Integer col, int docIndex) {
 		this.endOfWord = true;
 		if (this.infoNode == null) {
 			this.infoNode = new TrieLeaf();
 		}
-		this.infoNode.insertOccurence(line, col);
+		this.infoNode.insertOccurence(line, col, docIndex);
 	}
 	
 	public boolean isEndOfWord() {

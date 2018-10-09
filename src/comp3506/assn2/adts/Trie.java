@@ -24,7 +24,7 @@ public class Trie {
 	 * @param line The line that the word is found on within the document.
 	 * @param col the column on which the word starts.
 	 */
-	public void addWord(String word, Integer line, Integer col) {
+	public void addWord(String word, Integer line, Integer col, int docIndex) {
 		TrieNode movingNode = this.root; //1
 		
 		//Climbs down the tree adding the letters to previous nodes or making new ones.
@@ -38,7 +38,7 @@ public class Trie {
 			}
 			movingNode = movingNode.getElement(index);
 		}
-		movingNode.endOfWord(line, col);//1 //makes the last letter the end of the word and makes and info node.
+		movingNode.endOfWord(line, col, docIndex);//1 //makes the last letter the end of the word and makes and info node.
 	}
 	
 	/**
@@ -71,11 +71,11 @@ public class Trie {
 		return movingNode.returnInfoLeaf().appearences();
 	}
 	
-	public Pair<Integer, Integer>[] findWordIndex(String word) {
+	public int[] findWordIndex(String phrase) {
 		TrieNode movingNode = root; // 1
 		
-		for(int i = 0; i < word.length(); i++) {
-			int index = word.charAt(i) - 'a';
+		for(int i = 0; i < phrase.length(); i++) {
+			int index = phrase.charAt(i) - 'a';
 			if(movingNode.getElement(index) == null) {
 				return null;
 			} else {
@@ -84,6 +84,23 @@ public class Trie {
 		}
 		if(movingNode.isEndOfWord()) {
 			return movingNode.returnInfoLeaf().indexes();
+		}
+		return null;
+	}
+	
+	public Pair<Integer, Integer>[] findWordPair(String phrase) {
+		TrieNode movingNode = root; // 1
+		
+		for(int i = 0; i < phrase.length(); i++) {
+			int index = phrase.charAt(i) - 'a';
+			if(movingNode.getElement(index) == null) {
+				return null;
+			} else {
+				movingNode = movingNode.getElement(index);
+			}
+		}
+		if(movingNode.isEndOfWord()) {
+			return movingNode.returnInfoLeaf().pairs();
 		}
 		return null;
 	}

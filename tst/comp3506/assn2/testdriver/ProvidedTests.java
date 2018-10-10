@@ -45,7 +45,7 @@ public class ProvidedTests {
 	@BeforeClass
 	public static void openFiles() {
 		try {
-			searchApplication = new AutoTester("files\\shakespeare.txt", "files\\shakespeare-index.txt", "files\\stop-words.txt");
+			searchApplication = new AutoTester("./files/shakespeare.txt", "./files/shakespeare-index.txt", "./files/stop-words.txt");
 		} catch (FileNotFoundException | IllegalArgumentException e) {
 			System.out.println("Opening files failed!");
 			e.printStackTrace();

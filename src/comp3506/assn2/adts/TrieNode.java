@@ -4,7 +4,7 @@ package comp3506.assn2.adts;
 
 public class TrieNode {
 	private String storedElement;
-	TrieNode[] children;
+	private TrieNode[] children;
 	private final int ALPHABET_SIZE = 27; //a-z && '
 	private TrieLeaf infoNode;
 	private boolean endOfWord;
@@ -25,6 +25,15 @@ public class TrieNode {
 			this.infoNode = new TrieLeaf();
 		}
 		this.infoNode.insertOccurence(line, col, docIndex);
+	}
+	
+	public boolean hasChildren() {
+		for (int i = 0; i < this.children.length; i++) {
+			if (this.children[i] != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean isEndOfWord() {

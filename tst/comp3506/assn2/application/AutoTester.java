@@ -264,22 +264,65 @@ public class AutoTester implements Search {
 			return listOccurence;
 		}
 	}
-//		
-//		ArrayList<Pair<Integer,Integer>> occurenceList = new ArrayList<Pair<Integer,Integer>>();
-//		this.occurenceTraversal(occurenceList);
-//		
-//	}
-//	
-//	private void occurenceTraversal(ArrayList<Pair<Integer, Integer>> occurenceList) {
-//		this.visitNode()
-//	}
-//	
-//	private void visitNode(TrieNode node) {
-//		
-//	}
+		
+	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
+		this.arguementCheck(prefix);
+		List<Pair<Integer,Integer>> prefixOccurrence = new ArrayList<Pair<Integer,Integer>>();
+		TrieNode prefixNode = this.wordTrie.locateString(prefix);
+		prefixOccurrence = this.occurrenceTraversal(prefixNode, prefixOccurrence);
+		return prefixOccurrence;
+	}
 	
+	private List<Pair<Integer, Integer>> occurrenceTraversal(TrieNode root, List<Pair<Integer, Integer>> prefixOccurence) {
+		if(!(root.hasChildren())) {
+			this.visitNode(root, prefixOccurence);
+			return prefixOccurence;
+		}
+		prefixOccurence = this.visitNode(root, prefixOccurence);
+		for(int i = 0; i < root.getChildren().length; i++) {
+			if (root.getElement(i) != null) {
+				occurrenceTraversal(root.getElement(i), prefixOccurence);
+			}
+		}
+		return prefixOccurence;
+	}
 	
+	private List<Pair<Integer,Integer>> visitNode(TrieNode node, List<Pair<Integer,Integer>> prefixOccurence) {
+		if (node.isEndOfWord()) {
+			Pair<Integer, Integer>[] occurrences = node.returnInfoLeaf().pairs();
+			for (int i = 0; i < node.returnInfoLeaf().appearences(); i++) {
+				prefixOccurence.add(occurrences[i]);
+			}
+			return prefixOccurence;
+		}
+		return prefixOccurence;
+	}
 
+
+	public List<Integer> wordsOnLine(String[] words) throws IllegalArgumentException {
+		Pair<Integer, Integer>[][] occurrences = new Pair[words.length][];
+
+		if (words == null) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < words.length; i++) {
+			if (words[i] == null || words[i] == ""){
+				throw new IllegalArgumentException();
+			}
+			occurrences[i] = this.wordTrie.findWordPair(words[i]);
+		}
+
+		int[] lineNumber = new int[occurrences[0].length];
+
+		for (int i = 0; i < occurrences[0].length; i++){
+			lineNumber[i] = occurrences[0][i].getLeftValue();
+		}
+
+		for (int i = 0; i < occurrences[0].length; i++) {
+
+		}
+	}
 	
 	
 

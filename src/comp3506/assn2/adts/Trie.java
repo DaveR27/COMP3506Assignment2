@@ -104,5 +104,19 @@ public class Trie {
 		}
 		return null;
 	}
+	
+	public TrieNode locateString(String word) {
+		TrieNode movingNode = root;
+		
+		for(int i = 0; i < word.length(); i++) {
+			int index = word.charAt(i) - 'a';
+			if(movingNode.getElement(index) == null) {
+				return null;
+			} else {
+				movingNode = movingNode.getElement(index);
+			}
+		}
+		return movingNode;
+	}
 }
 	

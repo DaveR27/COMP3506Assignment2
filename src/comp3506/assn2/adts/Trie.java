@@ -1,13 +1,53 @@
 package comp3506.assn2.adts;
 
 import comp3506.assn2.utils.Pair;
+import comp3506.assn2.utils.Triple;
 
 public class Trie {
-	
+	private int titlePointer;
+	private int titleSize;
+	private Triple<String, Integer, Integer>[] titleIndexs;
 	private TrieNode root;
 	
+	@SuppressWarnings("unchecked")
 	public Trie() {
-		root = new TrieNode(null);
+		this.titlePointer = 0;
+		this.titleSize = 20;
+		this.titleIndexs = (Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
+		this.root = new TrieNode(null);
+	}
+	
+	public void insertTitleStart(String title, Integer startChar, Integer lineNumber) {
+		if (this.titlePointer == this.titleSize/2) {
+			this.reSizeTitle();
+		}
+		this.titleIndexs[this.titlePointer] = new 
+				Triple<String, Integer, Integer>(title, startChar, null);
+		this.titlePointer++;
+	}
+	
+	public Triple<String, Integer, Integer>[] getTitleIndexes() {
+		return this.titleIndexs;
+	}
+	
+	public Triple<String, Integer, Integer> containsTitle(String title){
+		for (int i = 0; i < this.titlePointer; i++) {
+			if (this.titleIndexs[i].getLeftValue().equals(title)) {
+				return this.titleIndexs[i];
+			}
+		}
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void reSizeTitle() {
+		this.titleSize = this.titleSize*2;
+		Triple<String, Integer, Integer>[] temp = 
+				(Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
+		for (int i = 0; i < this.titleIndexs.length; i++) {
+			temp[i] = this.titleIndexs[i];
+		}
+		this.titleIndexs = temp;
 	}
 	
 	/**

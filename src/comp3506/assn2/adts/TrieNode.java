@@ -1,6 +1,7 @@
 package comp3506.assn2.adts;
 
 
+import comp3506.assn2.utils.Pair;
 
 public class TrieNode {
 	private String storedElement;
@@ -19,12 +20,13 @@ public class TrieNode {
 		}
 	}
 	
-	public void endOfWord(Integer line, Integer col, int docIndex) {
+	public void endOfWord(Integer line, Integer col, int docIndex,
+						  Pair<Integer, Integer> lineIndex) {
 		this.endOfWord = true;
 		if (this.infoNode == null) {
 			this.infoNode = new TrieLeaf();
 		}
-		this.infoNode.insertOccurence(line, col, docIndex);
+		this.infoNode.insertOccurrence(line, col, docIndex, lineIndex);
 	}
 	
 	public boolean hasChildren() {

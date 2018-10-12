@@ -87,9 +87,9 @@ public class AutoTester implements Search {
 				&& this.indexData.toString().contains(line.split(",")[0])
 				&& (!(line.equals("")))) {
 					if (this.wordTrie.getTitleSize() > 1) {
-						endChars.add(lineStartIndex);
+						endChars.add(lineIndex);
 					}
-					this.wordTrie.insertTitleStart(line.split(",")[0], lineStartIndex);
+					this.wordTrie.insertTitleStart(line.split(",")[0], lineIndex);
 				}
 			}
 			Scanner wordFind = new Scanner(line);
@@ -106,7 +106,7 @@ public class AutoTester implements Search {
 			}
 			wordFind.close();
 		}
-		endChars.add(documentIndex);
+		endChars.add(lineIndex);
 			wordFinder.close();
 			if (titlesAvailable) {
 			Object[] endOfSections = endChars.toArray();
@@ -375,9 +375,9 @@ public class AutoTester implements Search {
 		return this.allWordsOnLines(linesToCheck, validWordsRequired, occurrences);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
+	public List<Triple<Integer,Integer,String>> simpleOrSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
+		List<Triple<Integer,Integer,String>> foundWords = new ArrayList<>();
 		if (words == null || words.length == 0) {
 			throw new IllegalArgumentException();
 		}
@@ -385,35 +385,108 @@ public class AutoTester implements Search {
 		if (titles == null || this.indexData == null || titles.length == 0) {
 			validTitles = false;
 		}
-		if (validTitles) {
-			StringBuffer section = new StringBuffer();
-			Triple<String, Integer, Integer> tripleNode= this.wordTrie.containsTitle(titles[0]);
-			for (int i = tripleNode.getCentreValue() - 1;
-					i < tripleNode.getRightValue(); i++) {
-				section.append(this.documentData.toString().charAt(i));
-			}
-			return null;
-		} else {
-			List<Triple<Integer,Integer,String>> foundLines = new ArrayList<>();
-			Pair<Integer, Integer>[][] occurrences = (Pair<Integer, Integer>[][]) new 
-					Pair[words.length][];
-			for (int i = 0; i < words.length; i++) {
-				occurrences[i] = this.wordTrie.findWordPair(words[i]);
-			}
-			for (int i = 0; i < occurrences.length; i++) {
-				if (occurrences[i] != null) {
-					for (int j = 0; j < occurrences[i].length; j++) {
-						if (occurrences[i][j] != null) {
-							foundLines.add(new 
-									Triple<Integer,Integer,String>(occurrences[i][j].getLeftValue(),
-											occurrences[i][j].getRightValue(), words[i]));
+		String[] validWords = this.validWordChecker(words);
+		//if (validTitles) {
+			for (int j = 0; j< titles.length; j++) {
+				Triple<Integer,Integer,String> tripleNode= this.wordTrie.containsTitle(titles[j]);
+				for (int i = 0; i < validWords.length; i++) {
+					if (validWords[i] != null) {
+						Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+						for (int p = 0; p < occurrences.length; p++) {
+							if (occurrences[p] != null) {
+								if ((occurrences[p].getLeftValue() >= tripleNode.getLeftValue()) &&
+										occurrences[p].getLeftValue() <= tripleNode.getCentreValue()) {
+									foundWords.add(new Triple<Integer,Integer,String>(occurrences[p].getLeftValue(),
+											occurrences[p].getRightValue(), validWords[i]));
+								}
+							}
 						}
 					}
 				}
 			}
-			return foundLines;
-		}	
+			return foundWords;
+		//}
 	}
+	
+//	@SuppressWarnings("unchecked")
+//	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
+//			throws IllegalArgumentException {
+//		List<Triple<Integer,Integer,String>> foundWords = new ArrayList<>();
+//		if (words == null || words.length == 0) {
+//			throw new IllegalArgumentException();
+//		}
+//		boolean validTitles = true;
+//		if (titles == null || this.indexData == null || titles.length == 0) {
+//			validTitles = false;
+//		}
+//		String[] validWords = this.validWordChecker(words);
+//		
+//		if (validTitles) {
+//			for (int j = 0; j < titles.length; j++) {
+//				Triple<Integer,Integer,String> tripleNode= this.wordTrie.containsTitle(titles[j]);
+//				CustomArrayList<Triple<Integer,Integer,String>> foundAreas = new CustomArrayList<>();
+//				if (tripleNode != null) {
+//					for (int i = 0; i < validWords.length; i++) {
+//						if (validWords[i] != null) {
+//							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+//							for (int p = 0; p < occurrences.length; p++) {
+//								if (occurrences[p] != null) {
+//									if ((occurrences[p].getLeftValue() >= tripleNode.getLeftValue()) &&
+//											occurrences[p].getLeftValue() <= tripleNode.getCentreValue()) {
+//										foundAreas.add(new Triple<Integer,Integer,String>(occurrences[p].getLeftValue(),
+//												occurrences[p].getRightValue(), validWords[i]));
+//									}
+//								}
+//							}
+//						}
+//					}
+//					Object[] foundInSection = foundAreas.toArray();
+//					CustomArrayList<String> strings = new CustomArrayList<>();
+//					for (int i = 0; i < foundInSection.length; i++) {
+//						if (foundInSection[i] != null) {
+//							strings.add(((Triple<Integer,Integer,String>) foundInSection[i]).getRightValue());
+//						}
+//					}
+//					
+//					boolean checker = true;
+//					for (int i = 0; i < validWords.length; i++) {
+//						if (validWords[i] != null) {
+//							if (!(strings.contains(validWords[i]))) {
+//								checker = false;
+//							}
+//						}
+//					}
+//					if (checker) {
+//						for (int i = 0; i < foundInSection.length; i++) {
+//							if (foundInSection[i] != null) {
+//								foundWords.add((Triple<Integer,Integer,String>) foundInSection[i]);
+//							}
+//						}
+//					}
+//				}
+//			}
+//			return foundWords;
+//		} else {
+//			List<Triple<Integer,Integer,String>> foundLines = new ArrayList<>();
+//			Pair<Integer, Integer>[][] occurrences = (Pair<Integer, Integer>[][]) new 
+//					Pair[words.length][];
+//			for (int i = 0; i < words.length; i++) {
+//				occurrences[i] = this.wordTrie.findWordPair(words[i]);
+//			}
+//			for (int i = 0; i < occurrences.length; i++) {
+//				if (occurrences[i] != null) {
+//					for (int j = 0; j < occurrences[i].length; j++) {
+//						if (occurrences[i][j] != null) {
+//							foundLines.add(new 
+//									Triple<Integer,Integer,String>(occurrences[i][j].getLeftValue(),
+//											occurrences[i][j].getRightValue(), words[i]));
+//						}
+//					}
+//				}
+//			}
+//			return foundLines;
+//		}	
+//	}
 	
 
 	private String[] validWordChecker(String[] words) {

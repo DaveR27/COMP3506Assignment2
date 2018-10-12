@@ -6,14 +6,14 @@ import comp3506.assn2.utils.Triple;
 public class Trie {
 	private int titlePointer;
 	private int titleSize;
-	private Triple<String, Integer, Integer>[] titleIndex;
+	private Triple<Integer,Integer,String>[] titleIndex;
 	private TrieNode root;
 	
 	@SuppressWarnings("unchecked")
 	public Trie() {
 		this.titlePointer = 0;
 		this.titleSize = 20;
-		this.titleIndex = (Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
+		this.titleIndex = (Triple<Integer,Integer,String>[]) new Triple[this.titleSize];
 		this.root = new TrieNode(null);
 	}
 	
@@ -22,25 +22,25 @@ public class Trie {
 			this.reSizeTitle();
 		}
 		this.titleIndex[this.titlePointer] = new
-				Triple<String, Integer, Integer>(title, startChar, null);
+				Triple<Integer,Integer,String>(startChar, null, title);
 		this.titlePointer++;
 	}
 	
 	public void insertTitleEnd(Integer endChar, int index) {
-		this.titleIndex[index].setRightValue(endChar);
+		this.titleIndex[index].setCentreValue(endChar);
 	}
 	
 	public int getTitleSize() {
 		return this.titlePointer;
 	}
 	
-	public Triple<String, Integer, Integer>[] getTitleIndexes() {
+	public Triple<Integer,Integer,String>[] getTitleIndexes() {
 		return this.titleIndex;
 	}
 	
-	public Triple<String, Integer, Integer> containsTitle(String title){
+	public Triple<Integer,Integer,String> containsTitle(String title){
 		for (int i = 0; i < this.titlePointer; i++) {
-			if (this.titleIndex[i].getLeftValue().equals(title)) {
+			if (this.titleIndex[i].getRightValue().equals(title)) {
 				return this.titleIndex[i];
 			}
 		}
@@ -50,8 +50,8 @@ public class Trie {
 	@SuppressWarnings("unchecked")
 	private void reSizeTitle() {
 		this.titleSize = this.titleSize*2;
-		Triple<String, Integer, Integer>[] temp = 
-				(Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
+		Triple<Integer,Integer,String>[] temp = 
+				(Triple<Integer,Integer,String>[]) new Triple[this.titleSize];
 		for (int i = 0; i < this.titleIndex.length; i++) {
 			temp[i] = this.titleIndex[i];
 		}

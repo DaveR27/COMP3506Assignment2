@@ -15,7 +15,7 @@ import comp3506.assn2.adts.TrieNode;
 import comp3506.assn2.utils.Pair;
 import comp3506.assn2.utils.Triple;
 
-
+import javax.lang.model.type.IntersectionType;
 
 
 /**
@@ -31,23 +31,23 @@ public class AutoTester implements Search {
 	private StringBuffer documentData;
 	private StringBuffer indexData;
 	private StringBuffer stopWordsData;
-	
+
 	/**
 	 * Create an object that performs search operations on a document.
 	 * If indexFileName or stopWordsFileName are null or an empty string the document should be loaded
 	 * and all searches will be across the entire document with no stop words.
-	 * All files are expected to be in the files sub-directory and 
+	 * All files are expected to be in the files sub-directory and
 	 * file names are to include the relative path to the files (e.g. "files\\shakespeare.txt").
-	 * 
+	 *
 	 * @param documentFileName  Name of the file containing the text of the document to be searched.
 	 * @param indexFileName     Name of the file containing the index of sections in the document.
 	 * @param stopWordsFileName Name of the file containing the stop words ignored by most searches.
-	 * @throws FileNotFoundException if any of the files cannot be loaded. 
-	 *                               The name of the file(s) that could not be loaded should be passed 
+	 * @throws FileNotFoundException if any of the files cannot be loaded.
+	 *                               The name of the file(s) that could not be loaded should be passed
 	 *                               to the FileNotFoundException's constructor.
 	 * @throws IllegalArgumentException if documentFileName is null or an empty string.
 	 */
-	public AutoTester(String documentFileName, String indexFileName, String stopWordsFileName) 
+	public AutoTester(String documentFileName, String indexFileName, String stopWordsFileName)
 			throws FileNotFoundException, IllegalArgumentException {
 		this.documentData = new StringBuffer();
 		this.indexData = new StringBuffer();
@@ -65,10 +65,9 @@ public class AutoTester implements Search {
 		this.wordTrie = new Trie();
 		this.loadTrie();
 	}
-	
+
 	private void loadTrie() {
 		boolean titlesAvailable = false;
-		CustomArrayList<Integer> endChars = new CustomArrayList<>();
 		if (this.indexData != null) {
 			titlesAvailable = true;
 		}
@@ -82,16 +81,6 @@ public class AutoTester implements Search {
 			documentIndex += lineLength + 1;
 			int lineStartIndex = documentIndex - lineLength;
 			int endOfLineIndex = documentIndex;
-			if (titlesAvailable) {
-				if (this.indexData.toString().contains(String.valueOf(lineIndex))
-				&& this.indexData.toString().contains(line.split(",")[0])
-				&& (!(line.equals("")))) {
-					if (this.wordTrie.getTitleSize() > 1) {
-						endChars.add(lineIndex);
-					}
-					this.wordTrie.insertTitleStart(line.split(",")[0], lineIndex);
-				}
-			}
 			Scanner wordFind = new Scanner(line);
 			while(wordFind.hasNext()) {
 				int colIndex = 0;
@@ -106,24 +95,53 @@ public class AutoTester implements Search {
 			}
 			wordFind.close();
 		}
-		endChars.add(lineIndex);
+
 			wordFinder.close();
-			if (titlesAvailable) {
-			Object[] endOfSections = endChars.toArray();
-			for (int i = 0; i < endOfSections.length; i++) {
-				if (endOfSections[i] != null) {
-					this.wordTrie.insertTitleEnd((Integer) endOfSections[i], i);
+		if (titlesAvailable) {
+			CustomArrayList<String> indexNames = new CustomArrayList<>();
+			CustomArrayList<Integer> endPoints = new CustomArrayList<>();
+			Scanner indexScanner = new Scanner(this.indexData.toString());
+			indexScanner.useDelimiter(",");
+			while (indexScanner.hasNextLine()) {
+				String line = indexScanner.nextLine();
+				String name = line.split(",")[0];
+				String lastIndex = line.split(",")[1];
+				indexNames.add(name);
+				endPoints.add(Integer.parseInt(lastIndex));
+			}
+			endPoints.add(lineIndex);
+			Object[] indexName = indexNames.toArray();
+			Object[] endPoint = endPoints.toArray();
+			Triple<Integer, Integer, String>[] titleIndexes = (Triple<Integer, Integer, String>[]) new Triple[indexName.length];
+			for (int i = 0; i < indexName.length; i++) {
+				if (indexName[i] != null) {
+					titleIndexes[i] = new Triple<Integer, Integer, String>(
+							null, null, (String) indexName[i]);
 				}
 			}
+			for (int i = 0; i < titleIndexes.length; i++) {
+				if ((endPoint[i] != null) && (titleIndexes[i] != null)) {
+					titleIndexes[i].setLeftValue((Integer) endPoint[i]);
+				} else {
+					break;
+				}
+			}
+			for (int i = 1; i < endPoint.length; i++) {
+				if ((endPoint[i] != null)) {
+					titleIndexes[i-1].setCentreValue((Integer) endPoint[i]);
+				} else {
+					break;
+				}
+			}
+			this.wordTrie.setTitleIndex(titleIndexes);
 		}
-		
 	}
 
-	
+
 	/**
 	 * Edits the string to remove unwanted punctuation, allowing the
 	 * words in the file to be stored in the custom Trie.
-	 * 
+	 *
 	 * @param line The line to be stripped of unwanted punctuation.
 	 * @return The fixed line that doesn't included unwanted chars.
 	 */
@@ -139,10 +157,10 @@ public class AutoTester implements Search {
 		return line;
 	}
 
-	
+
 	/**
 	 * Loads a file into memory using a BufferedReader.
-	 * 
+	 *
 	 * @param fileName The file to be saved to memory.
 	 * @param savingTo The variable to which the document data is saved
 	 * 			to.
@@ -153,9 +171,9 @@ public class AutoTester implements Search {
 		try {
 			bw = new BufferedReader(new FileReader(fileName)); // reads the txt file
 			//checks to see if there is any more txt if there is assigns it to line.
-			while ((line = bw.readLine()) != null) { 
+			while ((line = bw.readLine()) != null) {
 				savingTo.append(line + '\n'); //adds it to the variable.
-			} 
+			}
 			//io clean up
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -169,10 +187,10 @@ public class AutoTester implements Search {
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks arguments for null or an empty string.
-	 * 
+	 *
 	 * @param word the word to be checked for invalid arguments.
 	 * @return true if the word is valid otherwise false.
 	 * @throws IllegalArgumentException thrown if the word is an empty string
@@ -183,11 +201,11 @@ public class AutoTester implements Search {
 			throw new IllegalArgumentException();
 		}
 		return true;
-	}	
-	
+	}
+
 	/**
 	 * Determines the number of times the word appears in the document.
-	 * 
+	 *
 	 * @param word The word to be counted in the document.
 	 * @return The number of occurrences of the word in the document.
 	 * @throws IllegalArgumentException if word is null or an empty String.
@@ -196,11 +214,11 @@ public class AutoTester implements Search {
 		this.argumentCheck(word);
 		return this.wordTrie.getWordAmount(word);
 	}
-	
+
 	/**
 	 * Finds all occurrences of the phrase in the document.
 	 * A phrase may be a single word or a sequence of words.
-	 * 
+	 *
 	 * @param phrase The phrase to be found in the document.
 	 * @return List of pairs, where each pair indicates the line and column number of each occurrence of the phrase.
 	 *         Returns an empty list if the phrase is not found in the document.
@@ -214,7 +232,7 @@ public class AutoTester implements Search {
 		int searchStringPointer = 0;
 		Scanner lineScanner = new Scanner(line);
 		lineScanner.useDelimiter(",| | \r\n");
-	
+
 		while(lineScanner.hasNext()) {
 			String scannedWord;
 			scannedWord = lineScanner.next();
@@ -232,7 +250,7 @@ public class AutoTester implements Search {
 		lineScanner.close();
 		return this.trieOccurrenceSearch(searchStrings, searchStringPointer, phrase);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private List<Pair<Integer,Integer>> trieOccurrenceSearch(String[] searchWords, int indexPointer, String phrase) {
 		Pair<Integer, Integer>[] occurence;
@@ -242,7 +260,7 @@ public class AutoTester implements Search {
 		} else {
 			for(int i = 0; i<searchWords.length;i++) {
 				charLength += searchWords[i].length();
-			} 
+			}
 			charLength = charLength*2;
 			occurence = this.wordTrie.findWordPair(searchWords[0]);
 			Pair<Integer, Integer>[] occurrenceArray = (Pair<Integer, Integer>[]) new Pair[searchWords.length];
@@ -271,7 +289,7 @@ public class AutoTester implements Search {
 			return listOccurrence;
 		}
 	}
-		
+
 	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
 		this.argumentCheck(prefix);
 		List<Pair<Integer,Integer>> prefixOccurrence = new ArrayList<Pair<Integer,Integer>>();
@@ -279,7 +297,7 @@ public class AutoTester implements Search {
 		prefixOccurrence = this.occurrenceTraversal(prefixNode, prefixOccurrence);
 		return prefixOccurrence;
 	}
-	
+
 	private List<Pair<Integer, Integer>> occurrenceTraversal(TrieNode root, List<Pair<Integer, Integer>> prefixOccurence) {
 		if(!(root.hasChildren())) {
 			this.visitNode(root, prefixOccurence);
@@ -293,7 +311,7 @@ public class AutoTester implements Search {
 		}
 		return prefixOccurence;
 	}
-	
+
 	private List<Pair<Integer,Integer>> visitNode(TrieNode node, List<Pair<Integer,Integer>> prefixOccurence) {
 		if (node.isEndOfWord()) {
 			Pair<Integer, Integer>[] occurrences = node.returnInfoLeaf().pairs();
@@ -320,7 +338,7 @@ public class AutoTester implements Search {
 	}
 
 
-	
+
 	public List<Integer> someWordsOnLine(String[] words) throws IllegalArgumentException {
 		CustomArrayList<Integer> wordChecking = new CustomArrayList<>();
 		List<Integer> foundWords = new ArrayList<>();
@@ -339,18 +357,18 @@ public class AutoTester implements Search {
 				 }
 			}
 		}
-		
+
 		Object[] foundLines = wordChecking.toArray();
 		for (int i = 0; i < foundLines.length; i++) {
 			if (foundLines[i] != null) {
 				foundWords.add((Integer) foundLines[i]);
 			}
 		}
-		
+
 		return foundWords;
 	}
-	
-	public List<Integer> wordsNotOnLine(String[] wordsRequired, String[] wordsExcluded) 
+
+	public List<Integer> wordsNotOnLine(String[] wordsRequired, String[] wordsExcluded)
 			throws IllegalArgumentException {
 		String[] validWordsRequired = this.validWordChecker(wordsRequired);
 		String[] validWordsExcluded = this.validWordChecker(wordsExcluded);
@@ -374,10 +392,11 @@ public class AutoTester implements Search {
 		}
 		return this.allWordsOnLines(linesToCheck, validWordsRequired, occurrences);
 	}
-	
+
+
 	public List<Triple<Integer,Integer,String>> simpleOrSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
-		List<Triple<Integer,Integer,String>> foundWords = new ArrayList<>();
+		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
 		if (words == null || words.length == 0) {
 			throw new IllegalArgumentException();
 		}
@@ -386,18 +405,23 @@ public class AutoTester implements Search {
 			validTitles = false;
 		}
 		String[] validWords = this.validWordChecker(words);
-		//if (validTitles) {
-			for (int j = 0; j< titles.length; j++) {
-				Triple<Integer,Integer,String> tripleNode= this.wordTrie.containsTitle(titles[j]);
-				for (int i = 0; i < validWords.length; i++) {
-					if (validWords[i] != null) {
-						Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
-						for (int p = 0; p < occurrences.length; p++) {
-							if (occurrences[p] != null) {
-								if ((occurrences[p].getLeftValue() >= tripleNode.getLeftValue()) &&
-										occurrences[p].getLeftValue() <= tripleNode.getCentreValue()) {
-									foundWords.add(new Triple<Integer,Integer,String>(occurrences[p].getLeftValue(),
-											occurrences[p].getRightValue(), validWords[i]));
+		if (validTitles) {
+			for (int j = 0; j < titles.length; j++) {
+				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
+				if (tripleNode != null) {
+					int startLine = tripleNode.getLeftValue();
+					int endLine = tripleNode.getCentreValue();
+					for (int i = 0; i < validWords.length; i++) {
+						if (validWords[i] != null) {
+							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+							for (int p = 0; p < occurrences.length; p++) {
+								if (occurrences[p] != null) {
+									if ((occurrences[p].getLeftValue() >= startLine) &&
+											occurrences[p].getLeftValue() <= endLine) {
+										Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+												occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWords[i]);
+										foundWords.add(instance);
+									}
 								}
 							}
 						}
@@ -405,88 +429,116 @@ public class AutoTester implements Search {
 				}
 			}
 			return foundWords;
-		//}
+		} else {
+			for (int i = 0; i < validWords.length; i++) {
+				if (validWords[i] != null) {
+					Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+					for (int p = 0; p < occurrences.length; p++) {
+						if (occurrences[p] != null) {
+							Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+									occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWords[i]);
+							foundWords.add(instance);
+
+						}
+					}
+				}
+			}
+			return  foundWords;
+		}
 	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
-//			throws IllegalArgumentException {
-//		List<Triple<Integer,Integer,String>> foundWords = new ArrayList<>();
-//		if (words == null || words.length == 0) {
-//			throw new IllegalArgumentException();
-//		}
-//		boolean validTitles = true;
-//		if (titles == null || this.indexData == null || titles.length == 0) {
-//			validTitles = false;
-//		}
-//		String[] validWords = this.validWordChecker(words);
-//		
-//		if (validTitles) {
-//			for (int j = 0; j < titles.length; j++) {
-//				Triple<Integer,Integer,String> tripleNode= this.wordTrie.containsTitle(titles[j]);
-//				CustomArrayList<Triple<Integer,Integer,String>> foundAreas = new CustomArrayList<>();
-//				if (tripleNode != null) {
-//					for (int i = 0; i < validWords.length; i++) {
-//						if (validWords[i] != null) {
-//							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
-//							for (int p = 0; p < occurrences.length; p++) {
-//								if (occurrences[p] != null) {
-//									if ((occurrences[p].getLeftValue() >= tripleNode.getLeftValue()) &&
-//											occurrences[p].getLeftValue() <= tripleNode.getCentreValue()) {
-//										foundAreas.add(new Triple<Integer,Integer,String>(occurrences[p].getLeftValue(),
-//												occurrences[p].getRightValue(), validWords[i]));
-//									}
-//								}
-//							}
-//						}
-//					}
-//					Object[] foundInSection = foundAreas.toArray();
-//					CustomArrayList<String> strings = new CustomArrayList<>();
-//					for (int i = 0; i < foundInSection.length; i++) {
-//						if (foundInSection[i] != null) {
-//							strings.add(((Triple<Integer,Integer,String>) foundInSection[i]).getRightValue());
-//						}
-//					}
-//					
-//					boolean checker = true;
-//					for (int i = 0; i < validWords.length; i++) {
-//						if (validWords[i] != null) {
-//							if (!(strings.contains(validWords[i]))) {
-//								checker = false;
-//							}
-//						}
-//					}
-//					if (checker) {
-//						for (int i = 0; i < foundInSection.length; i++) {
-//							if (foundInSection[i] != null) {
-//								foundWords.add((Triple<Integer,Integer,String>) foundInSection[i]);
-//							}
-//						}
-//					}
-//				}
-//			}
-//			return foundWords;
-//		} else {
-//			List<Triple<Integer,Integer,String>> foundLines = new ArrayList<>();
-//			Pair<Integer, Integer>[][] occurrences = (Pair<Integer, Integer>[][]) new 
-//					Pair[words.length][];
-//			for (int i = 0; i < words.length; i++) {
-//				occurrences[i] = this.wordTrie.findWordPair(words[i]);
-//			}
-//			for (int i = 0; i < occurrences.length; i++) {
-//				if (occurrences[i] != null) {
-//					for (int j = 0; j < occurrences[i].length; j++) {
-//						if (occurrences[i][j] != null) {
-//							foundLines.add(new 
-//									Triple<Integer,Integer,String>(occurrences[i][j].getLeftValue(),
-//											occurrences[i][j].getRightValue(), words[i]));
-//						}
-//					}
-//				}
-//			}
-//			return foundLines;
-//		}	
-//	}
+
+	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
+			throws IllegalArgumentException {
+		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
+		if (words == null || words.length == 0) {
+			throw new IllegalArgumentException();
+		}
+		boolean validTitles = true;
+		if (titles == null || this.indexData == null || titles.length == 0) {
+			validTitles = false;
+		}
+		int wordAmount = 0;
+		String[] validWords = this.validWordChecker(words);
+		for (int i = 0; i < validWords.length; i++) {
+			if (validWords[i] != null) {
+				wordAmount++;
+			}
+		}
+		if (validTitles) {
+			for (int j = 0; j < titles.length; j++) {
+				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
+				if (tripleNode != null) {
+					int startLine = tripleNode.getLeftValue();
+					int endLine = tripleNode.getCentreValue();
+					int inSection = 0;
+					CustomArrayList<String> foundAreas = new CustomArrayList<>();
+					for (int i = 0; i < validWords.length; i++) {
+						if (validWords[i] != null) {
+							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+							for (int p = 0; p < occurrences.length; p++) {
+								if (occurrences[p] != null) {
+									if ((occurrences[p].getLeftValue() >= startLine) &&
+											occurrences[p].getLeftValue() <= endLine) {
+										if (!(foundAreas.contains(validWords[i]))) {
+											foundAreas.add(validWords[i]);
+											inSection++;
+										}
+									}
+								}
+							}
+						}
+					}
+					if (wordAmount == inSection) {
+						for (int i = 0; i < validWords.length; i++) {
+							if (validWords[i] != null) {
+								Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+								for (int p = 0; p < occurrences.length; p++) {
+									if (occurrences[p] != null) {
+										if ((occurrences[p].getLeftValue() >= startLine) &&
+												occurrences[p].getLeftValue() <= endLine) {
+											Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+													occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWords[i]);
+											foundWords.add(instance);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			int inSection = 0;
+			CustomArrayList<String> foundAreas = new CustomArrayList<>();
+			for (int i = 0; i < validWords.length; i++) {
+				if (validWords[i] != null) {
+					Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+					if (occurrences != null) {
+						if (!(foundAreas.contains(validWords[i]))) {
+							foundAreas.add(validWords[i]);
+							inSection++;
+						}
+					}
+				}
+			}
+			if (wordAmount == inSection) {
+				for (int i = 0; i < validWords.length; i++) {
+					if (validWords[i] != null) {
+						Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWords[i]);
+						for (int p = 0; p < occurrences.length; p++) {
+							if (occurrences[p] != null) {
+								Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+										occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWords[i]);
+								foundWords.add(instance);
+							}
+						}
+					}
+				}
+			}
+		}
+		return foundWords;
+	}
+
 	
 
 	private String[] validWordChecker(String[] words) {

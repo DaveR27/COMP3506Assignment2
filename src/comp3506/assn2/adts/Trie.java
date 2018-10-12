@@ -4,59 +4,37 @@ import comp3506.assn2.utils.Pair;
 import comp3506.assn2.utils.Triple;
 
 public class Trie {
-	private int titlePointer;
-	private int titleSize;
 	private Triple<Integer,Integer,String>[] titleIndex;
 	private TrieNode root;
 	
 	@SuppressWarnings("unchecked")
 	public Trie() {
-		this.titlePointer = 0;
-		this.titleSize = 20;
-		this.titleIndex = (Triple<Integer,Integer,String>[]) new Triple[this.titleSize];
+
+		this.titleIndex = null;
 		this.root = new TrieNode(null);
 	}
 	
-	public void insertTitleStart(String title, Integer startChar) {
-		if (this.titlePointer == this.titleSize/2) {
-			this.reSizeTitle();
-		}
-		this.titleIndex[this.titlePointer] = new
-				Triple<Integer,Integer,String>(startChar, null, title);
-		this.titlePointer++;
+	public void setTitleIndex(Triple<Integer,Integer,String>[] titleIndex) {
+		this.titleIndex = titleIndex;
 	}
-	
-	public void insertTitleEnd(Integer endChar, int index) {
-		this.titleIndex[index].setCentreValue(endChar);
-	}
-	
-	public int getTitleSize() {
-		return this.titlePointer;
-	}
-	
-	public Triple<Integer,Integer,String>[] getTitleIndexes() {
-		return this.titleIndex;
-	}
-	
-	public Triple<Integer,Integer,String> containsTitle(String title){
-		for (int i = 0; i < this.titlePointer; i++) {
-			if (this.titleIndex[i].getRightValue().equals(title)) {
-				return this.titleIndex[i];
+
+	public Triple<Integer, Integer, String> containsTitle(String title) {
+		for (int i = 0; i < this.titleIndex.length; i++) {
+			if (this.titleIndex[i] != null) {
+				if (this.titleIndex[i].getRightValue().equals(title)) {
+					return this.titleIndex[i];
+				}
+			}else {
+				break;
 			}
 		}
 		return null;
 	}
-	
-	@SuppressWarnings("unchecked")
-	private void reSizeTitle() {
-		this.titleSize = this.titleSize*2;
-		Triple<Integer,Integer,String>[] temp = 
-				(Triple<Integer,Integer,String>[]) new Triple[this.titleSize];
-		for (int i = 0; i < this.titleIndex.length; i++) {
-			temp[i] = this.titleIndex[i];
-		}
-		this.titleIndex = temp;
+
+	public Triple<Integer,Integer,String>[] getTitleIndex() {
+		return this.titleIndex;
 	}
+
 	
 	/**
 	 * This method will add a word to a Trie, where each letter will be a node and then the following

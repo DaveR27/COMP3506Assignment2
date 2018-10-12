@@ -15,8 +15,6 @@ import comp3506.assn2.adts.TrieNode;
 import comp3506.assn2.utils.Pair;
 import comp3506.assn2.utils.Triple;
 
-import javax.lang.model.type.IntersectionType;
-
 
 /**
  * Hook class used by automated testing tool.
@@ -397,14 +395,10 @@ public class AutoTester implements Search {
 	public List<Triple<Integer,Integer,String>> simpleOrSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
-		if (words == null || words.length == 0) {
-			throw new IllegalArgumentException();
-		}
-		boolean validTitles = true;
-		if (titles == null || this.indexData == null || titles.length == 0) {
-			validTitles = false;
-		}
+		this.wordsToProccessCheck(words);
+		boolean validTitles = this.validTitlesChecker(titles);
 		String[] validWords = this.validWordChecker(words);
+		
 		if (validTitles) {
 			for (int j = 0; j < titles.length; j++) {
 				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
@@ -446,19 +440,15 @@ public class AutoTester implements Search {
 			return  foundWords;
 		}
 	}
-
+	
 	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
-		if (words == null || words.length == 0) {
-			throw new IllegalArgumentException();
-		}
-		boolean validTitles = true;
-		if (titles == null || this.indexData == null || titles.length == 0) {
-			validTitles = false;
-		}
+		this.wordsToProccessCheck(words);
+		boolean validTitles = this.validTitlesChecker(titles);
 		int wordAmount = 0;
 		String[] validWords = this.validWordChecker(words);
+		
 		for (int i = 0; i < validWords.length; i++) {
 			if (validWords[i] != null) {
 				wordAmount++;
@@ -539,7 +529,149 @@ public class AutoTester implements Search {
 		return foundWords;
 	}
 
+	public List<Triple<Integer,Integer,String>> simpleNotSearch(String[] titles, String[] wordsRequired, 
+			String[] wordsExcluded) throws IllegalArgumentException {
+		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
+		this.wordsToProccessCheck(wordsRequired);
+		boolean validTitles = this.validTitlesChecker(titles);
+		String[] validWordsRequired = this.validWordChecker(wordsRequired);
+		String[] validWordsExcluded = this.validWordChecker(wordsExcluded);
+		CustomArrayList<String> doNotSearchArea = new CustomArrayList<>();
+		
+		if (validTitles) {
+			for (int j = 0; j < titles.length; j++) {
+				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
+				if (tripleNode != null) {
+					int startLine = tripleNode.getLeftValue();
+					int endLine = tripleNode.getCentreValue();
+					for (int i = 0; i < validWordsExcluded.length; i++) {
+						if (validWordsExcluded[i] != null) {
+							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsExcluded[i]);
+							for (int p = 0; p < occurrences.length; p++) {
+								if (occurrences[p] != null) {
+									if (((occurrences[p].getLeftValue() >= startLine) &&
+											occurrences[p].getLeftValue() <= endLine)) {
+                                        doNotSearchArea.add(tripleNode.getRightValue());
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			int wordAmount = 0;
+			for (int i = 0; i < validWordsRequired.length; i++) {
+				if (validWordsRequired[i] != null) {
+					wordAmount++;
+				}
+			}
+			for (int i = 0; i < titles.length; i++){
+			    if (doNotSearchArea.contains(titles[i])){
+			        titles[i] = null;
+                }
+            }
+			for (int j = 0; j < titles.length; j++) {
+				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
+				if (tripleNode != null) {
+					int startLine = tripleNode.getLeftValue();
+					int endLine = tripleNode.getCentreValue();
+					int inSection = 0;
+					CustomArrayList<String> foundAreas = new CustomArrayList<>();
+					for (int i = 0; i < validWordsRequired.length; i++) {
+						if (validWordsRequired[i] != null) {
+							Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsRequired[i]);
+							for (int p = 0; p < occurrences.length; p++) {
+								if (occurrences[p] != null) {
+									if ((occurrences[p].getLeftValue() >= startLine) &&
+											occurrences[p].getLeftValue() <= endLine) {
+										if (!(foundAreas.contains(validWordsRequired[i]))) {
+											foundAreas.add(validWordsRequired[i]);
+											inSection++;
+										}
+									}
+								}
+							}
+						}
+					}
+					if (wordAmount == inSection) {
+						for (int i = 0; i < validWordsRequired.length; i++) {
+							if (validWordsRequired[i] != null) {
+								Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsRequired[i]);
+								for (int p = 0; p < occurrences.length; p++) {
+									if (occurrences[p] != null) {
+										if ((occurrences[p].getLeftValue() >= startLine) &&
+												occurrences[p].getLeftValue() <= endLine) {
+											Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+													occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWordsRequired[i]);
+											foundWords.add(instance);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return foundWords;
+		} else {
+			int wordAmount = 0;
+			for (int i = 0; i < validWordsRequired.length; i++) {
+				if (validWordsRequired[i] != null) {
+					wordAmount++;
+				}
+			}
+			for (int i = 0; i < validWordsExcluded.length; i++)  {
+				if (validWordsExcluded[i] != null) {
+					Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsExcluded[i]);
+					if (occurrences == null) {
+						return foundWords;
+					}
+				}
+			}
+			int inSection = 0;
+			CustomArrayList<String> foundAreas = new CustomArrayList<>();
+			for (int i = 0; i < validWordsRequired.length; i++) {
+				if (validWordsRequired[i] != null) {
+					Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsRequired[i]);
+					if (occurrences != null) {
+						if (!(foundAreas.contains(validWordsRequired[i]))) {
+							foundAreas.add(validWordsRequired[i]);
+							inSection++;
+						}
+					}
+				}
+			}
+			if (wordAmount == inSection) {
+				for (int i = 0; i < validWordsRequired.length; i++) {
+					if (validWordsRequired[i] != null) {
+						Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validWordsRequired[i]);
+						for (int p = 0; p < occurrences.length; p++) {
+							if (occurrences[p] != null) {
+								Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+										occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validWordsRequired[i]);
+								foundWords.add(instance);
+							}
+						}
+					}
+				}
+			}
+		}
+		return foundWords;
+	}
+
 	
+	private void wordsToProccessCheck (String[] words) {
+		if (words == null || words.length == 0) {
+			throw new IllegalArgumentException();
+		}
+	}
+	
+	private boolean validTitlesChecker(String[] titles) {
+		if (titles == null || this.indexData == null || titles.length == 0) {
+			return false;
+		}
+		return true;
+	}
 
 	private String[] validWordChecker(String[] words) {
 		String[] validWords = new String[words.length];

@@ -107,11 +107,13 @@ public class AutoTester implements Search {
 			wordFind.close();
 		}
 		endChars.add(documentIndex);
-		wordFinder.close();
-		Object[] endOfSections = endChars.toArray();
-		for (int i = 0; i < endOfSections.length; i++) {
-			if (endOfSections[i] != null) {
-				this.wordTrie.insertTitleEnd((Integer) endOfSections[i], i);
+			wordFinder.close();
+			if (titlesAvailable) {
+			Object[] endOfSections = endChars.toArray();
+			for (int i = 0; i < endOfSections.length; i++) {
+				if (endOfSections[i] != null) {
+					this.wordTrie.insertTitleEnd((Integer) endOfSections[i], i);
+				}
 			}
 		}
 		
@@ -390,7 +392,6 @@ public class AutoTester implements Search {
 					i < tripleNode.getRightValue(); i++) {
 				section.append(this.documentData.toString().charAt(i));
 			}
-			System.out.println(section.toString());
 			return null;
 		} else {
 			List<Triple<Integer,Integer,String>> foundLines = new ArrayList<>();

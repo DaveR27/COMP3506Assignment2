@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import comp3506.assn2.adts.CustomArrayList;
 import comp3506.assn2.adts.Trie;
 import comp3506.assn2.adts.TrieLeaf;
 import comp3506.assn2.adts.TrieNode;
@@ -67,6 +68,7 @@ public class AutoTester implements Search {
 	
 	private void loadTrie() {
 		boolean titlesAvailable = false;
+		CustomArrayList<Integer> endChars = new CustomArrayList<>();
 		if (this.indexData != null) {
 			titlesAvailable = true;
 		}
@@ -84,7 +86,10 @@ public class AutoTester implements Search {
 				if (this.indexData.toString().contains(String.valueOf(lineIndex))
 				&& this.indexData.toString().contains(line.split(",")[0])
 				&& (!(line.equals("")))) {
-					this.wordTrie.insertTitleStart(line.split(",")[0], lineStartIndex, lineIndex);
+					if (this.wordTrie.getTitleSize() > 1) {
+						endChars.add(lineStartIndex);
+					}
+					this.wordTrie.insertTitleStart(line.split(",")[0], lineStartIndex);
 				}
 			}
 			Scanner wordFind = new Scanner(line);
@@ -101,7 +106,15 @@ public class AutoTester implements Search {
 			}
 			wordFind.close();
 		}
+		endChars.add(documentIndex);
 		wordFinder.close();
+		Object[] endOfSections = endChars.toArray();
+		for (int i = 0; i < endOfSections.length; i++) {
+			if (endOfSections[i] != null) {
+				this.wordTrie.insertTitleEnd((Integer) endOfSections[i], i);
+			}
+		}
+		
 	}
 
 	
@@ -307,6 +320,7 @@ public class AutoTester implements Search {
 
 	
 	public List<Integer> someWordsOnLine(String[] words) throws IllegalArgumentException {
+		CustomArrayList<Integer> wordChecking = new CustomArrayList<>();
 		List<Integer> foundWords = new ArrayList<>();
 		String[] validWords = this.validWordChecker(words);
 
@@ -316,13 +330,21 @@ public class AutoTester implements Search {
 				 occurrences = this.wordTrie.findWordPair(validWords[i]);
 				 for (int j = 0; j < occurrences.length; j++) {
 				 	if (occurrences[j] != null) {
-						if (!(foundWords.contains(occurrences[j].getLeftValue()))) {
-							foundWords.add(occurrences[j].getLeftValue());
+						if (!(wordChecking.contains(occurrences[j].getLeftValue()))) {
+							wordChecking.add(occurrences[j].getLeftValue());
 						}
 					}
 				 }
 			}
 		}
+		
+		Object[] foundLines = wordChecking.toArray();
+		for (int i = 0; i < foundLines.length; i++) {
+			if (foundLines[i] != null) {
+				foundWords.add((Integer) foundLines[i]);
+			}
+		}
+		
 		return foundWords;
 	}
 	
@@ -362,10 +384,13 @@ public class AutoTester implements Search {
 			validTitles = false;
 		}
 		if (validTitles) {
-			/*
-			 * TODO: you can return the list of all of the char indexes and you know what "Line" the start at
-			 * so you need to compare to the next index and find out when the section stops.
-			 */
+			StringBuffer section = new StringBuffer();
+			Triple<String, Integer, Integer> tripleNode= this.wordTrie.containsTitle(titles[0]);
+			for (int i = tripleNode.getCentreValue() - 1;
+					i < tripleNode.getRightValue(); i++) {
+				section.append(this.documentData.toString().charAt(i));
+			}
+			System.out.println(section.toString());
 			return null;
 		} else {
 			List<Triple<Integer,Integer,String>> foundLines = new ArrayList<>();

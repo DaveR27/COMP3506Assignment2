@@ -6,34 +6,42 @@ import comp3506.assn2.utils.Triple;
 public class Trie {
 	private int titlePointer;
 	private int titleSize;
-	private Triple<String, Integer, Integer>[] titleIndexs;
+	private Triple<String, Integer, Integer>[] titleIndex;
 	private TrieNode root;
 	
 	@SuppressWarnings("unchecked")
 	public Trie() {
 		this.titlePointer = 0;
 		this.titleSize = 20;
-		this.titleIndexs = (Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
+		this.titleIndex = (Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
 		this.root = new TrieNode(null);
 	}
 	
-	public void insertTitleStart(String title, Integer startChar, Integer lineNumber) {
+	public void insertTitleStart(String title, Integer startChar) {
 		if (this.titlePointer == this.titleSize/2) {
 			this.reSizeTitle();
 		}
-		this.titleIndexs[this.titlePointer] = new 
+		this.titleIndex[this.titlePointer] = new
 				Triple<String, Integer, Integer>(title, startChar, null);
 		this.titlePointer++;
 	}
 	
+	public void insertTitleEnd(Integer endChar, int index) {
+		this.titleIndex[index].setRightValue(endChar);
+	}
+	
+	public int getTitleSize() {
+		return this.titlePointer;
+	}
+	
 	public Triple<String, Integer, Integer>[] getTitleIndexes() {
-		return this.titleIndexs;
+		return this.titleIndex;
 	}
 	
 	public Triple<String, Integer, Integer> containsTitle(String title){
 		for (int i = 0; i < this.titlePointer; i++) {
-			if (this.titleIndexs[i].getLeftValue().equals(title)) {
-				return this.titleIndexs[i];
+			if (this.titleIndex[i].getLeftValue().equals(title)) {
+				return this.titleIndex[i];
 			}
 		}
 		return null;
@@ -44,10 +52,10 @@ public class Trie {
 		this.titleSize = this.titleSize*2;
 		Triple<String, Integer, Integer>[] temp = 
 				(Triple<String, Integer, Integer>[]) new Triple[this.titleSize];
-		for (int i = 0; i < this.titleIndexs.length; i++) {
-			temp[i] = this.titleIndexs[i];
+		for (int i = 0; i < this.titleIndex.length; i++) {
+			temp[i] = this.titleIndex[i];
 		}
-		this.titleIndexs = temp;
+		this.titleIndex = temp;
 	}
 	
 	/**

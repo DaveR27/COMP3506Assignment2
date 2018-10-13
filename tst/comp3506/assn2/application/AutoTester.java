@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import comp3506.assn2.adts.CustomArrayList;
-import comp3506.assn2.adts.Trie;
+import comp3506.assn2.adts.WordMatchTrie;
 import comp3506.assn2.adts.TrieLeaf;
 import comp3506.assn2.adts.TrieNode;
 import comp3506.assn2.utils.Pair;
@@ -25,7 +25,7 @@ import comp3506.assn2.utils.Triple;
  * @author 
  */
 public class AutoTester implements Search {
-	private Trie wordTrie;
+	private WordMatchTrie wordTrie;
 	private StringBuffer documentData;
 	private StringBuffer indexData;
 	private StringBuffer stopWordsData;
@@ -60,99 +60,9 @@ public class AutoTester implements Search {
 			this.loadFile(stopWordsFileName, this.stopWordsData);
 		}
 		this.loadFile(documentFileName, this.documentData);
-		this.wordTrie = new Trie();
-		this.loadTrie();
+		this.wordTrie = new WordMatchTrie(this.documentData.toString(), this.indexData.toString());
 	}
 
-	private void loadTrie() {
-		boolean titlesAvailable = false;
-		if (this.indexData != null) {
-			titlesAvailable = true;
-		}
-		int lineIndex = 0;
-		int documentIndex = 0;
-		Scanner wordFinder = new Scanner(this.documentData.toString());
-		while(wordFinder.hasNextLine()) {
-			lineIndex++;
-			String line = wordFinder.nextLine();
-			int lineLength = line.length();
-			documentIndex += lineLength + 1;
-			int lineStartIndex = documentIndex - lineLength;
-			int endOfLineIndex = documentIndex;
-			Scanner wordFind = new Scanner(line);
-			while(wordFind.hasNext()) {
-				int colIndex = 0;
-				String word = wordFind.next();
-				word = this.cleanLine(word);
-				int wordIndex = line.indexOf(word, colIndex);
-				int overallIndex = documentIndex - (lineLength-wordIndex);
-				this.wordTrie.addWord(word.replaceAll("[ ]", "").toLowerCase(), lineIndex,
-						wordIndex+1, overallIndex, new Pair<Integer,
-								Integer>(lineStartIndex, endOfLineIndex));
-			}
-			wordFind.close();
-		}
-
-			wordFinder.close();
-		if (titlesAvailable) {
-			CustomArrayList<String> indexNames = new CustomArrayList<>();
-			CustomArrayList<Integer> endPoints = new CustomArrayList<>();
-			Scanner indexScanner = new Scanner(this.indexData.toString());
-			indexScanner.useDelimiter(",");
-			while (indexScanner.hasNextLine()) {
-				String line = indexScanner.nextLine();
-				String name = line.split(",")[0];
-				String lastIndex = line.split(",")[1];
-				indexNames.add(name);
-				endPoints.add(Integer.parseInt(lastIndex));
-			}
-			endPoints.add(lineIndex);
-			Object[] indexName = indexNames.toArray();
-			Object[] endPoint = endPoints.toArray();
-			Triple<Integer, Integer, String>[] titleIndexes = (Triple<Integer, Integer, String>[]) new Triple[indexName.length];
-			for (int i = 0; i < indexName.length; i++) {
-				if (indexName[i] != null) {
-					titleIndexes[i] = new Triple<Integer, Integer, String>(
-							null, null, (String) indexName[i]);
-				}
-			}
-			for (int i = 0; i < titleIndexes.length; i++) {
-				if ((endPoint[i] != null) && (titleIndexes[i] != null)) {
-					titleIndexes[i].setLeftValue((Integer) endPoint[i]);
-				} else {
-					break;
-				}
-			}
-			for (int i = 1; i < endPoint.length; i++) {
-				if ((endPoint[i] != null)) {
-					titleIndexes[i-1].setCentreValue((Integer) endPoint[i]);
-				} else {
-					break;
-				}
-			}
-			this.wordTrie.setTitleIndex(titleIndexes);
-		}
-	}
-
-
-	/**
-	 * Edits the string to remove unwanted punctuation, allowing the
-	 * words in the file to be stored in the custom Trie.
-	 *
-	 * @param line The line to be stripped of unwanted punctuation.
-	 * @return The fixed line that doesn't included unwanted chars.
-	 */
-	private String cleanLine(String line) {
-		line = line.replaceAll("[^'a-zA-z ]", "");
-		line = line.replaceAll("[_-]", " ");
-		line = line.replaceAll("\\]", "");
-		line = line.replaceAll("\\[", "");
-		line = line.replaceAll("[`]", "");
-		line = line.replaceAll("[\\\\]", "");
-		line = line.replaceAll("[/]", "");
-		line = line.replaceAll("[,]", "");
-		return line;
-	}
 
 
 	/**
@@ -223,7 +133,7 @@ public class AutoTester implements Search {
 	 */
 	public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
 		this.argumentCheck(phrase);
-		String line = this.cleanLine(phrase);
+		String line = this.wordTrie.cleanLine(phrase);
 		int searchStringSize = 10;
 		String[] searchStrings = new String[searchStringSize];
 		int searchStringPointer = 0;
@@ -503,6 +413,100 @@ public class AutoTester implements Search {
 		}
 		return foundWords;
 	}
+
+    public List<Triple<Integer,Integer,String>> compoundAndOrSearch(String[] titles, String[] wordsRequired,
+                                                                     String[] orWords)
+            throws IllegalArgumentException {
+        List<Triple<Integer,Integer,String>> foundAndOr = new ArrayList<>();
+        this.wordsToProcessCheck(wordsRequired);
+        boolean validTitles = this.validTitlesChecker(titles);
+        String[] validAndWords = this.validWordChecker(wordsRequired);
+        String[] validOrWord = this.validWordChecker(orWords);
+        int wordAmount = 0;
+
+        for (int i = 0; i < validAndWords.length; i++) {
+            if (validAndWords[i] != null) {
+                wordAmount++;
+            }
+
+        }
+
+        if (validTitles){
+            for (int j = 0; j < titles.length; j++){
+                Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
+                if (tripleNode != null) {
+                    int startLine = tripleNode.getLeftValue();
+                    int endLine = tripleNode.getCentreValue();
+                    int inSection = 0;
+                    CustomArrayList<String> foundAreas = new CustomArrayList<>();
+                    for (int i = 0; i < validAndWords.length; i++) {
+                        if (validAndWords[i] != null) {
+                            Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validAndWords[i]);
+                            for (int p = 0; p < occurrences.length; p++) {
+                                if (occurrences[p] != null) {
+                                    if ((occurrences[p].getLeftValue() >= startLine) &&
+                                            occurrences[p].getLeftValue() <= endLine) {
+                                        if (!(foundAreas.contains(validAndWords[i]))) {
+                                            foundAreas.add(validAndWords[i]);
+                                            inSection++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (wordAmount == inSection) {
+                        for (int i = 0; i < validOrWord.length; i++) {
+                            if (validOrWord[i] != null) {
+                                Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validOrWord[i]);
+                                for (int p = 0; p < occurrences.length; p++) {
+                                    if (occurrences[p] != null) {
+                                        if ((occurrences[p].getLeftValue() >= startLine) &&
+                                                occurrences[p].getLeftValue() <= endLine) {
+                                            Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+                                                    occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validOrWord[i]);
+                                            foundAndOr.add(instance);
+                                            foundAndOr = this.andInSection(wordAmount, titles[j], validAndWords, foundAndOr);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            int inSection = 0;
+            CustomArrayList<String> foundAreas = new CustomArrayList<>();
+            for (int i = 0; i < validAndWords.length; i++) {
+                if (validAndWords[i] != null) {
+                    Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validAndWords[i]);
+                    if (occurrences != null) {
+                        if (!(foundAreas.contains(validAndWords[i]))) {
+                            foundAreas.add(validAndWords[i]);
+                            inSection++;
+                        }
+                    }
+                }
+            }
+            if (wordAmount == inSection) {
+                for (int i = 0; i < validOrWord.length; i++) {
+                    if (validOrWord[i] != null) {
+                        Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validOrWord[i]);
+                        for (int p = 0; p < occurrences.length; p++) {
+                            if (occurrences[p] != null) {
+                                Triple<Integer, Integer, String> instance = new Triple<Integer, Integer, String>(
+                                        occurrences[p].getLeftValue(), occurrences[p].getRightValue(), validOrWord[i]);
+                                foundAndOr.add(instance);
+                                foundAndOr = this.andInDocument(wordAmount, validAndWords, foundAndOr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return foundAndOr;
+    }
 
 	private List<Triple<Integer,Integer,String>> andInDocument(int wordAmount,String[] words,List<Triple<Integer,Integer,String>> foundWords ) {
 		int inSection = 0;

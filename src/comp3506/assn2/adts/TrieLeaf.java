@@ -2,6 +2,11 @@ package comp3506.assn2.adts;
 
 import comp3506.assn2.utils.Pair;
 
+/**
+ * 
+ * @author David Riddell
+ *
+ */
 public class TrieLeaf {
 	private Pair<Integer, Integer>[] occurrences; //where the word starts
 	private int occurrenceSize;
@@ -34,20 +39,20 @@ public class TrieLeaf {
 	public void insertOccurrence(Integer line, Integer col, int index,
 								 Pair<Integer, Integer> lineIndex) {
 		if (this.pointer == this.occurrenceSize /2) { //2
-			this.resizeOccurrences(); //1
+			this.resizeOccurrences(); //O(n)
 		}
 		if (this.indexPointer == this.indexSize/2) {
-			this.resizeIndex();
+			this.resizeIndex(); //O(n)
 		}
 		if (this.lineIndexPointer == this.lineIndexSize/2) {
-			this.resizeLineIndex();
+			this.resizeLineIndex(); //O(n)
 		}
-		this.lineIndex[this.lineIndexPointer] = lineIndex;
-		this.lineIndexPointer++;
-		this.occurrenceIndex[this.indexPointer] = index;
-		this.indexPointer++;
+		this.lineIndex[this.lineIndexPointer] = lineIndex; //2
+		this.lineIndexPointer++; //2
+		this.occurrenceIndex[this.indexPointer] = index; //2
+		this.indexPointer++; //2
 		this.occurrences[this.pointer] = new Pair<Integer, Integer>(line, col);//3
-		this.pointer++;
+		this.pointer++;//2
 	}
 	
 	/**
@@ -69,9 +74,12 @@ public class TrieLeaf {
 		return this.lineIndex;
 	}
 
-
+	/**
+	 * 
+	 */
 	private void resizeLineIndex() {
 		this.lineIndexSize = this.lineIndexSize*2;
+		@SuppressWarnings("unchecked")
 		Pair<Integer, Integer>[] temp = (Pair<Integer, Integer>[]) new Pair[this.lineIndexSize];
 		for (int i = 0; i < this.lineIndex.length; i++) {
 			temp[i] = this.lineIndex[i];
@@ -79,6 +87,9 @@ public class TrieLeaf {
 		this.lineIndex = temp;
 	}
 	
+	/**
+	 * 
+	 */
 	private void resizeIndex() {
 		this.indexSize = this.indexSize*2;
 		int[] temp = new int[this.indexSize];
@@ -88,6 +99,9 @@ public class TrieLeaf {
 		this.occurrenceIndex = temp;
 	}
 	
+	/**
+	 * 
+	 */
 	private void resizeOccurrences() {
 		this.occurrenceSize = this.occurrenceSize *2; //2
 		@SuppressWarnings("unchecked")

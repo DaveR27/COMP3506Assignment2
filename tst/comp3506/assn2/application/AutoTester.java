@@ -157,46 +157,17 @@ public class AutoTester implements Search {
 		lineScanner.close();
 		return this.trieOccurrenceSearch(searchStrings, searchStringPointer, phrase);
 	}
-
-	@SuppressWarnings("unchecked")
-	private List<Pair<Integer,Integer>> trieOccurrenceSearch(String[] searchWords, int indexPointer, String phrase) {
-		Pair<Integer, Integer>[] occurence;
-		int charLength = 0;
-		if (indexPointer == 1) {
-			occurence = this.wordTrie.findWordPair(searchWords[0]);
-		} else {
-			for(int i = 0; i<searchWords.length;i++) {
-				charLength += searchWords[i].length();
-			}
-			charLength = charLength*2;
-			occurence = this.wordTrie.findWordPair(searchWords[0]);
-			Pair<Integer, Integer>[] occurrenceArray = (Pair<Integer, Integer>[]) new Pair[searchWords.length];
-			int occurrencePointer = 0;
-			int[] occurrenceIndex = this.wordTrie.findWordIndex(searchWords[0]);
-			for (int i = 0; i<=occurrenceIndex.length; i++) {
-				StringBuilder wordFound = new StringBuilder();
-				for(int j = 0; j <= charLength; j++) {
-					wordFound.append(this.documentData.toString().charAt(occurrenceIndex[i + j]));
-				}
-				if (wordFound.toString().contains(phrase)) {
-					occurrenceArray[occurrencePointer] = occurence[i];
-				}
-			}
-			occurence = occurrenceArray;
-		}
-		if (occurence == null) {
-			return new ArrayList<Pair<Integer,Integer>>(null);
-		} else {
-			List<Pair<Integer,Integer>> listOccurrence = new ArrayList<Pair<Integer,Integer>>();
-			for (int i = 0; i<occurence.length; i++) {
-				if (occurence[i] != null) {
-					listOccurrence.add(occurence[i]);
-				}
-			}
-			return listOccurrence;
-		}
-	}
-
+	
+	/**
+	 * Finds all occurrences of the prefix in the document.
+	 * A prefix is the start of a word. It can also be the complete word.
+	 * For example, "obscure" would be a prefix for "obscure", "obscured", "obscures" and "obscurely".
+	 * 
+	 * @param prefix The prefix of a word that is to be found in the document.
+	 * @return List of pairs, where each pair indicates the line and column number of each occurrence of the prefix.
+	 *         Returns an empty list if the prefix is not found in the document.
+	 * @throws IllegalArgumentException if prefix is null or an empty String.
+	 */
 	public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
 		this.argumentCheck(prefix);
 		List<Pair<Integer,Integer>> prefixOccurrence = new ArrayList<Pair<Integer,Integer>>();
@@ -205,32 +176,17 @@ public class AutoTester implements Search {
 		return prefixOccurrence;
 	}
 
-	private List<Pair<Integer, Integer>> occurrenceTraversal(TrieNode root, List<Pair<Integer, Integer>> prefixOccurence) {
-		if(!(root.hasChildren())) {
-			this.visitNode(root, prefixOccurence);
-			return prefixOccurence;
-		}
-		prefixOccurence = this.visitNode(root, prefixOccurence);
-		for(int i = 0; i < root.getChildren().length; i++) {
-			if (root.getElement(i) != null) {
-				occurrenceTraversal(root.getElement(i), prefixOccurence);
-			}
-		}
-		return prefixOccurence;
-	}
-
-	private List<Pair<Integer,Integer>> visitNode(TrieNode node, List<Pair<Integer,Integer>> prefixOccurence) {
-		if (node.isEndOfWord()) {
-			Pair<Integer, Integer>[] occurrences = node.returnInfoLeaf().pairs();
-			for (int i = 0; i < node.returnInfoLeaf().appearances(); i++) {
-				prefixOccurence.add(occurrences[i]);
-			}
-			return prefixOccurence;
-		}
-		return prefixOccurence;
-	}
-
-
+	/**
+	 * Searches the document for lines that contain all the words in the 'words' parameter.
+	 * Implements simple "and" logic when searching for the words.
+	 * The words do not need to be contiguous on the line.
+	 * 
+	 * @param words Array of words to find on a single line in the document.
+	 * @return List of line numbers on which all the words appear in the document.
+	 *         Returns an empty list if the words do not appear in any line in the document.
+	 * @throws IllegalArgumentException if words is null or an empty array 
+	 *                                  or any of the Strings in the array are null or empty.
+	 */
 	public List<Integer> wordsOnLine(String[] words) throws IllegalArgumentException {
 		String[] validWords = this.validWordChecker(words);
 		int i = 0;
@@ -245,7 +201,17 @@ public class AutoTester implements Search {
 	}
 
 
-
+	/**
+	 * Searches the document for lines that contain any of the words in the 'words' parameter.
+	 * Implements simple "or" logic when searching for the words.
+	 * The words do not need to be contiguous on the line.
+	 * 
+	 * @param words Array of words to find on a single line in the document.
+	 * @return List of line numbers on which any of the words appear in the document.
+	 *         Returns an empty list if none of the words appear in any line in the document.
+	 * @throws IllegalArgumentException if words is null or an empty array 
+	 *                                  or any of the Strings in the array are null or empty.
+	 */
 	public List<Integer> someWordsOnLine(String[] words) throws IllegalArgumentException {
 		CustomArrayList<Integer> wordChecking = new CustomArrayList<>();
 		List<Integer> foundWords = new ArrayList<>();
@@ -274,7 +240,21 @@ public class AutoTester implements Search {
 
 		return foundWords;
 	}
-
+	
+	/**
+	 * Searches the document for lines that contain all the words in the 'wordsRequired' parameter
+	 * and none of the words in the 'wordsExcluded' parameter.
+	 * Implements simple "not" logic when searching for the words.
+	 * The words do not need to be contiguous on the line.
+	 * 
+	 * @param wordsRequired Array of words to find on a single line in the document.
+	 * @param wordsExcluded Array of words that must not be on the same line as 'wordsRequired'.
+	 * @return List of line numbers on which all the wordsRequired appear 
+	 *         and none of the wordsExcluded appear in the document.
+	 *         Returns an empty list if no lines meet the search criteria.
+	 * @throws IllegalArgumentException if either of wordsRequired or wordsExcluded are null or an empty array 
+	 *                                  or any of the Strings in either of the arrays are null or empty.
+	 */
 	public List<Integer> wordsNotOnLine(String[] wordsRequired, String[] wordsExcluded)
 			throws IllegalArgumentException {
 		String[] validWordsRequired = this.validWordChecker(wordsRequired);
@@ -300,7 +280,21 @@ public class AutoTester implements Search {
 		return this.allWordsOnLines(linesToCheck, validWordsRequired, occurrences);
 	}
 
-
+	/**
+	 * Searches the document for sections that contain any of the words in the 'words' parameter.
+	 * Implements simple "or" logic when searching for the words.
+	 * The words do not need to be on the same lines.
+	 * 
+	 * @param titles Array of titles of the sections to search within, 
+	 *               the entire document is searched if titles is null or an empty array.
+	 * @param words Array of words to find within a defined section in the document.
+	 * @return List of triples, where each triple indicates the line and column number and word found,
+	 *         for each occurrence of one of the words.
+	 *         Returns an empty list if the words are not found in the indicated sections of the document, 
+	 *         or all the indicated sections are not part of the document.
+	 * @throws IllegalArgumentException if words is null or an empty array 
+	 *                                  or any of the Strings in either of the arrays are null or empty.
+	 */
 	public List<Triple<Integer,Integer,String>> simpleOrSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
@@ -323,6 +317,21 @@ public class AutoTester implements Search {
 		return foundWords;
 	}
 	
+	/**
+	 * Searches the document for sections that contain all the words in the 'words' parameter.
+	 * Implements simple "and" logic when searching for the words.
+	 * The words do not need to be on the same lines.
+	 * 
+	 * @param titles Array of titles of the sections to search within, 
+	 *               the entire document is searched if titles is null or an empty array.
+	 * @param words Array of words to find within a defined section in the document.
+	 * @return List of triples, where each triple indicates the line and column number and word found,
+	 *         for each occurrence of one of the words.
+	 *         Returns an empty list if the words are not found in the indicated sections of the document, 
+	 *         or all the indicated sections are not part of the document.
+	 * @throws IllegalArgumentException if words is null or an empty array 
+	 *                                  or any of the Strings in either of the arrays are null or empty.
+	 */
 	public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
 			throws IllegalArgumentException {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
@@ -346,9 +355,23 @@ public class AutoTester implements Search {
 		return foundWords;
 	}
 
-
-
-
+	/**
+	 * Searches the document for sections that contain all the words in the 'wordsRequired' parameter
+	 * and none of the words in the 'wordsExcluded' parameter.
+	 * Implements simple "not" logic when searching for the words.
+	 * The words do not need to be on the same lines.
+	 * 
+	 * @param titles Array of titles of the sections to search within, 
+	 *               the entire document is searched if titles is null or an empty array.
+	 * @param wordsRequired Array of words to find within a defined section in the document.
+	 * @param wordsExcluded Array of words that must not be in the same section as 'wordsRequired'.
+	 * @return List of triples, where each triple indicates the line and column number and word found,
+	 *         for each occurrence of one of the required words.
+	 *         Returns an empty list if the words are not found in the indicated sections of the document, 
+	 *         or all the indicated sections are not part of the document.
+	 * @throws IllegalArgumentException if wordsRequired is null or an empty array 
+	 *                                  or any of the Strings in any of the arrays are null or empty.
+	 */
 	public List<Triple<Integer,Integer,String>> simpleNotSearch(String[] titles, String[] wordsRequired, 
 			String[] wordsExcluded) throws IllegalArgumentException {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
@@ -413,7 +436,24 @@ public class AutoTester implements Search {
 		}
 		return foundWords;
 	}
-
+	
+	/**
+	 * Searches the document for sections that contain all the words in the 'wordsRequired' parameter
+	 * and at least one of the words in the 'orWords' parameter.
+	 * Implements simple compound "and/or" logic when searching for the words.
+	 * The words do not need to be on the same lines.
+	 * 
+	 * @param titles Array of titles of the sections to search within, 
+	 *               the entire document is searched if titles is null or an empty array.
+	 * @param wordsRequired Array of words to find within a defined section in the document.
+	 * @param orWords Array of words, of which at least one, must be in the same section as 'wordsRequired'.
+	 * @return List of triples, where each triple indicates the line and column number and word found,
+	 *         for each occurrence of one of the words.
+	 *         Returns an empty list if the words are not found in the indicated sections of the document, 
+	 *         or all the indicated sections are not part of the document.
+	 * @throws IllegalArgumentException if wordsRequired is null or an empty array 
+	 *                                  or any of the Strings in any of the arrays are null or empty.
+	 */
     public List<Triple<Integer,Integer,String>> compoundAndOrSearch(String[] titles, String[] wordsRequired,
                                                                      String[] orWords)
             throws IllegalArgumentException {
@@ -507,7 +547,72 @@ public class AutoTester implements Search {
         }
         return foundAndOr;
     }
+    
+    private List<Pair<Integer, Integer>> occurrenceTraversal(TrieNode root, List<Pair<Integer, Integer>> prefixOccurence) {
+		if(!(root.hasChildren())) {
+			this.visitNode(root, prefixOccurence);
+			return prefixOccurence;
+		}
+		prefixOccurence = this.visitNode(root, prefixOccurence);
+		for(int i = 0; i < root.getChildren().length; i++) {
+			if (root.getElement(i) != null) {
+				occurrenceTraversal(root.getElement(i), prefixOccurence);
+			}
+		}
+		return prefixOccurence;
+	}
 
+	private List<Pair<Integer,Integer>> visitNode(TrieNode node, List<Pair<Integer,Integer>> prefixOccurence) {
+		if (node.isEndOfWord()) {
+			Pair<Integer, Integer>[] occurrences = node.returnInfoLeaf().pairs();
+			for (int i = 0; i < node.returnInfoLeaf().appearances(); i++) {
+				prefixOccurence.add(occurrences[i]);
+			}
+			return prefixOccurence;
+		}
+		return prefixOccurence;
+	}
+    
+    @SuppressWarnings("unchecked")
+	private List<Pair<Integer,Integer>> trieOccurrenceSearch(String[] searchWords, int indexPointer, String phrase) {
+		Pair<Integer, Integer>[] occurence;
+		int charLength = 0;
+		if (indexPointer == 1) {
+			occurence = this.wordTrie.findWordPair(searchWords[0]);
+		} else {
+			for(int i = 0; i<searchWords.length;i++) {
+				charLength += searchWords[i].length();
+			}
+			charLength = charLength*2;
+			occurence = this.wordTrie.findWordPair(searchWords[0]);
+			Pair<Integer, Integer>[] occurrenceArray = (Pair<Integer, Integer>[]) new Pair[searchWords.length];
+			int occurrencePointer = 0;
+			int[] occurrenceIndex = this.wordTrie.findWordIndex(searchWords[0]);
+			for (int i = 0; i<=occurrenceIndex.length; i++) {
+				StringBuilder wordFound = new StringBuilder();
+				for(int j = 0; j <= charLength; j++) {
+					wordFound.append(this.documentData.toString().charAt(occurrenceIndex[i + j]));
+				}
+				if (wordFound.toString().contains(phrase)) {
+					occurrenceArray[occurrencePointer] = occurence[i];
+				}
+			}
+			occurence = occurrenceArray;
+		}
+		if (occurence == null) {
+			return new ArrayList<Pair<Integer,Integer>>(null);
+		} else {
+			List<Pair<Integer,Integer>> listOccurrence = new ArrayList<Pair<Integer,Integer>>();
+			for (int i = 0; i<occurence.length; i++) {
+				if (occurence[i] != null) {
+					listOccurrence.add(occurence[i]);
+				}
+			}
+			return listOccurrence;
+		}
+	}
+    
+    
 	private List<Triple<Integer,Integer,String>> andInDocument(int wordAmount,String[] words,List<Triple<Integer,Integer,String>> foundWords ) {
 		int inSection = 0;
 		CustomArrayList<String> foundAreas = new CustomArrayList<>();

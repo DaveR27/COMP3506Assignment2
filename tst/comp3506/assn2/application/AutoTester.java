@@ -337,7 +337,7 @@ public class AutoTester implements Search {
 		List<Triple<Integer, Integer, String>> foundWords = new ArrayList<>();
 		this.wordsToProcessCheck(words);
 		boolean validTitles = this.validTitlesChecker(titles);
-		int wordAmount = 0;
+		int wordAmount = 0; //amount of valid words
 		String[] validWords = this.validWordChecker(words);
 		
 		for (int i = 0; i < validWords.length; i++) {
@@ -380,7 +380,8 @@ public class AutoTester implements Search {
 		String[] validWordsRequired = this.validWordChecker(wordsRequired);
 		String[] validWordsExcluded = this.validWordChecker(wordsExcluded);
 		CustomArrayList<String> doNotSearchArea = new CustomArrayList<>();
-		
+
+		//Removes the not instances
 		if (validTitles) {
 			for (int j = 0; j < titles.length; j++) {
 				Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
@@ -402,6 +403,7 @@ public class AutoTester implements Search {
 					}
 				}
 			}
+			//does the and logic
 			int wordAmount = 0;
 			for (int i = 0; i < validWordsRequired.length; i++) {
 				if (validWordsRequired[i] != null) {
@@ -462,7 +464,7 @@ public class AutoTester implements Search {
         boolean validTitles = this.validTitlesChecker(titles);
         String[] validAndWords = this.validWordChecker(wordsRequired);
         String[] validOrWord = this.validWordChecker(orWords);
-        int wordAmount = 0;
+        int wordAmount = 0; // amount of valid words
 
         for (int i = 0; i < validAndWords.length; i++) {
             if (validAndWords[i] != null) {
@@ -472,6 +474,7 @@ public class AutoTester implements Search {
         }
 
         if (validTitles){
+        	//checks and logic
             for (int j = 0; j < titles.length; j++){
                 Triple<Integer, Integer, String> tripleNode = this.wordTrie.containsTitle(titles[j]);
                 if (tripleNode != null) {
@@ -496,6 +499,7 @@ public class AutoTester implements Search {
                         }
                     }
                     if (wordAmount == inSection) {
+                    	//does and or logic
                         for (int i = 0; i < validOrWord.length; i++) {
                             if (validOrWord[i] != null) {
                                 Pair<Integer, Integer>[] occurrences = this.wordTrie.findWordPair(validOrWord[i]);
@@ -547,7 +551,15 @@ public class AutoTester implements Search {
         }
         return foundAndOr;
     }
-    
+    /**
+     * Traverses the tree from the root continuing down till there is no children, each node
+     * is visited, when visited if there is endOfWord data available  this will be added to the
+     * prefixOccurrence list.
+     * 
+     * @param root Node to start traversing from.
+     * @param prefixOccurence all the occurrences of where the prefix occurs.
+     * @return occurrences of the prefix.
+     */
     private List<Pair<Integer, Integer>> occurrenceTraversal(TrieNode root, List<Pair<Integer, Integer>> prefixOccurence) {
 		if(!(root.hasChildren())) {
 			this.visitNode(root, prefixOccurence);
@@ -561,7 +573,17 @@ public class AutoTester implements Search {
 		}
 		return prefixOccurence;
 	}
-
+    
+    /**
+     * Visits the nodes given to each and adding all the data available to 
+     * prefixOccurence. Doing this will allow all the times a particular
+     * prefix is used within the text.
+     * 
+     * @param node The node that is being checked for information about a word.
+     * @param prefixOccurence List that data is added to if there is information
+     * 		Available.
+     * @return list will all the information about the node in it.
+     */
 	private List<Pair<Integer,Integer>> visitNode(TrieNode node, List<Pair<Integer,Integer>> prefixOccurence) {
 		if (node.isEndOfWord()) {
 			Pair<Integer, Integer>[] occurrences = node.returnInfoLeaf().pairs();
@@ -678,7 +700,17 @@ public class AutoTester implements Search {
 		}
 		return foundWords;
 	}
-
+	
+	/**
+	 * Finds all the words within a specific part of the text.
+	 * 
+	 * @param startLine Start of the section.
+	 * @param endLine End of the section.
+	 * @param words the words to check within a section.
+	 * @param a list to add the words found within a section to.
+	 * @return List of the words that are found within a section
+	 * 		of the text.
+	 */
 	private List<Triple<Integer, Integer, String>> findWordsInSection (int startLine, int endLine, String[] words,List<Triple<Integer, Integer, String>> foundWords ){
 			for (int i = 0; i < words.length; i++) {
 				if (words[i] != null) {
@@ -697,20 +729,39 @@ public class AutoTester implements Search {
 			}
 			return foundWords;
 		}
-
+	
+	/**
+	 * Checks to see if there is valid input given as the words
+	 * parameter.
+	 * 
+	 * @param words Words to check to see if there is a valid
+	 * 		input
+	 */
 	private void wordsToProcessCheck(String[] words) {
 		if (words == null || words.length == 0) {
 			throw new IllegalArgumentException();
 		}
 	}
 	
+	/**
+	 * Checks to see if valid input has been given for titles
+	 * 
+	 * @param titles Input to check
+	 * @return True if valid, otherwise false.
+	 */
 	private boolean validTitlesChecker(String[] titles) {
 		if (titles == null || this.indexData == null || titles.length == 0) {
 			return false;
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Checks to see if valid words have been given as words input
+	 * 
+	 * @param words Input to be checked
+	 * @return List of valid words that were found from the input.
+	 */
 	private String[] validWordChecker(String[] words) {
 		String[] validWords = new String[words.length];
 		if (this.stopWordsData != null) {
@@ -727,6 +778,13 @@ public class AutoTester implements Search {
 		return validWords;
 	}
 	
+	/**
+	 * Builds a line from indexes so that the words on that line
+	 * can be checked
+	 * 
+	 * @param word The word the is storing the lines reference.
+	 * @return The line that has been built from the indexes
+	 */
 	private String[] lineBuilder(String word) {
 		TrieLeaf infoNode = this.wordTrie.wordInfo(word);
 		Pair<Integer, Integer>[] lineIndex = infoNode.lineIndex();
@@ -743,7 +801,15 @@ public class AutoTester implements Search {
 		}
 		return lines;
 	}
-
+	
+	/**
+	 * Checks to see if all the words are contained on the line.
+	 * 
+	 * @param linesToCheck Lines to see if the word is found on it
+	 * @param validWords words that are being searched for
+	 * @param occurrences How many times the words occur.
+	 * @return List of the words on that line if they are found
+	 */
 	private List<Integer> allWordsOnLines(String[] linesToCheck, String[] validWords, Pair<Integer, Integer>[] occurrences){
 		List<Integer> foundWords = new ArrayList<>();
 

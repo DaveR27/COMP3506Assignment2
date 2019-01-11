@@ -121,10 +121,10 @@ public class CustomArrayList<T> {
      * In the worst case of add resize has to be called which has
      * and O(n) runtime so in the worst case of this method call 
      * there is an O(n) runtime, but in cases where there is no
-     * need to resize the array there is just a constant runtime.
-     * this method in the worst case has a big-O value of:
+     * need to resize the array there is just a constant runtime. This
+     * means the the add method works in amortised constant time:
      * 
-     * O(n)
+     * O(1)
      * 
      * @param object Element to be added to the array.
      */
